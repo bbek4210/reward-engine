@@ -1,47 +1,106 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useUser } from "@/contexts/UserContext";
 import Header from "@/components/layout/Header";
-import SearchBar from "@/components/layout/SearchBar";
-import Tabs from "@/components/layout/Tabs";
-import StatCard from "@/components/ui/StatCard";
-import SectionHeader from "@/components/mission/SectionHeader";
-import MissionGrid from "@/components/mission/MissionGrid";
-import Button from "@/components/ui/Button";
-import type { TabType } from "@/types";
-import { mockMissions, mockStats } from "@/lib/mockData";
+import ActiveMissionCard from "@/components/mission/ActiveMissionCard";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import MissionModal from "@/components/mission/MissionModal";
+
+type FilterTab = "all" | "easy" | "streak" | "high-impact" | "referral";
+
+interface ActiveMission {
+  id: string;
+  title: string;
+  difficulty: "EASY" | "MEDIUM" | "HIGH IMPACT";
+  resetTime: string;
+  progress: {
+    current: number;
+    total: number;
+    percentage: number;
+  };
+  points: number;
+  recurring: "daily" | "weekly" | "monthly";
+}
 
 /**
- * Dashboard Page
- *
- * Layout Structure:
- * - Header (sticky)
- * - Hero section (max-width container)
- * - Search bar
- * - Tabs (filter missions)
- * - Stats cards (4 across)
- * - Featured missions section
- * - Mission grid (2 columns)
- * - Load more button
- *
- * Responsive:
- * - Desktop: 2-column grid, 4 stat cards
- * - Tablet: 1-column grid, 2 stat cards per row
- * - Mobile: 1-column everything, compact padding
+ * Dashboard Page - Main user hub for active missions and participation
  */
 export default function Dashboard() {
   const wallet = usePhantomWallet();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<TabType>("trending");
+  const { addPoints } = useUser();
+  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+  const [selectedConstituency, setSelectedConstituency] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [activeMissions, setActiveMissions] = useState<ActiveMission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedMission, setSelectedMission] = useState<string | null>(null);
+  const [recentActivities, setRecentActivities] = useState<
+    Array<{
+      id: string;
+      type: "vote" | "comment" | "proposal" | "referral";
+      description: string;
+      location?: string;
+      time: string;
+    }>
+  >([]);
 
-  const tabs = [
-    { id: "trending" as TabType, label: "Trending", count: 12 },
-    { id: "new" as TabType, label: "New Missions", count: 8 },
-    { id: "constituencies" as TabType, label: "Constituencies", count: 15 },
-    { id: "categories" as TabType, label: "Categories", count: 6 },
-    { id: "all" as TabType, label: "All" },
+  // Active missions - Start fresh with 0 progress
+  const mockActiveMissions: ActiveMission[] = [
+    {
+      id: "1",
+      title: "Weekly Voter Participation",
+      difficulty: "MEDIUM",
+      resetTime: "in 3 days",
+      progress: { current: 0, total: 5, percentage: 0 },
+      points: 15,
+      recurring: "weekly",
+    },
+    {
+      id: "2",
+      title: "Community Referral Milestone",
+      difficulty: "HIGH IMPACT",
+      resetTime: "Monthly",
+      progress: { current: 0, total: 10, percentage: 0 },
+      points: 50,
+      recurring: "monthly",
+    },
+    {
+      id: "3",
+      title: "Daily Opinion Pulse",
+      difficulty: "EASY",
+      resetTime: "daily",
+      progress: { current: 0, total: 1, percentage: 0 },
+      points: 5,
+      recurring: "daily",
+    },
+    {
+      id: "4",
+      title: "Monthly Health Survey",
+      difficulty: "MEDIUM",
+      resetTime: "in 15 days",
+      progress: { current: 0, total: 3, percentage: 0 },
+      points: 25,
+      recurring: "monthly",
+    },
   ];
+
+  useEffect(() => {
+    // Simulate loading missions from API
+    const loadMissions = async () => {
+      setLoading(true);
+      // In production, fetch from API
+      // const result = await missionApi.getAll({ status: 'active' });
+      setTimeout(() => {
+        setActiveMissions(mockActiveMissions);
+        setLoading(false);
+      }, 500);
+    };
+
+    loadMissions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleConnectWallet = async () => {
     if (!wallet.isPhantomInstalled) {
@@ -55,17 +114,98 @@ export default function Dashboard() {
     alert("Citizen verification flow would start here");
   };
 
-  const handleMissionStart = (missionId: string) => {
-    console.log("Starting mission:", missionId);
-    alert(
-      `Starting mission ${missionId}. This would navigate to mission details.`,
+  const handleCompleteMission = (missionId: string) => {
+    if (!wallet.connected) {
+      alert("Please connect your wallet first");
+      return;
+    }
+    setSelectedMission(missionId);
+  };
+
+  const handleCompleteAction = async (actionId: string, points: number) => {
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Award points
+    addPoints(points);
+
+    // Add to recent activity
+    const newActivity = {
+      id: Date.now().toString(),
+      type: "vote" as const,
+      description: "Completed action in",
+      location: selectedMission || "Mission",
+      time: "Just now",
+    };
+    setRecentActivities([newActivity, ...recentActivities.slice(0, 4)]);
+
+    // Update mission progress
+    setActiveMissions((prev) =>
+      prev.map((mission) => {
+        if (mission.id === selectedMission) {
+          const newCurrent = Math.min(
+            mission.progress.current + 1,
+            mission.progress.total,
+          );
+          return {
+            ...mission,
+            progress: {
+              ...mission.progress,
+              current: newCurrent,
+              percentage: Math.round(
+                (newCurrent / mission.progress.total) * 100,
+              ),
+            },
+          };
+        }
+        return mission;
+      }),
     );
   };
 
-  const handleMissionDetails = (missionId: string) => {
-    console.log("Viewing mission details:", missionId);
-    alert(`Viewing details for mission ${missionId}`);
-  };
+  const filterTabs = [
+    { id: "all" as FilterTab, label: "All" },
+    { id: "easy" as FilterTab, label: "Easy" },
+    { id: "streak" as FilterTab, label: "Streak" },
+    { id: "high-impact" as FilterTab, label: "High Impact" },
+    { id: "referral" as FilterTab, label: "Referral" },
+  ];
+
+  // Mission actions for the modal
+  const missionActions = [
+    {
+      id: "action-1",
+      type: "vote" as const,
+      label: "Vote on Priority Issues",
+      points: 150,
+      icon: "🗳️",
+    },
+    {
+      id: "action-2",
+      type: "comment" as const,
+      label: "Share Your Opinion",
+      points: 50,
+      icon: "💬",
+    },
+    {
+      id: "action-3",
+      type: "proposal" as const,
+      label: "Submit a Proposal",
+      points: 100,
+      icon: "📝",
+    },
+    {
+      id: "action-4",
+      type: "upload" as const,
+      label: "Upload Supporting Evidence",
+      points: 75,
+      icon: "📸",
+    },
+  ];
+
+  const selectedMissionData = activeMissions.find(
+    (m) => m.id === selectedMission,
+  );
 
   return (
     <div className="min-h-screen bg-[#F7F4F2]">
@@ -79,157 +219,98 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <main className="max-w-[1280px] mx-auto px-6 py-8 space-y-8">
-        {/* Search Bar */}
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onFilter={() => console.log("Filter clicked")}
-          onSort={() => console.log("Sort clicked")}
-        />
-
-        {/* Tabs */}
-        <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="YOUR POINTS"
-            value={mockStats.yourPoints.toLocaleString()}
-            highlight
-            icon={
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                />
-              </svg>
-            }
-          />
-          <StatCard
-            label="CURRENT STREAK"
-            value={`${mockStats.currentStreak} Days`}
-            icon={
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-                />
-              </svg>
-            }
-          />
-          <StatCard
-            label="WEEKLY RANK"
-            value={`#${mockStats.weeklyRank}`}
-            icon={
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            }
-          />
-          <StatCard
-            label="MISSIONS COMPLETED"
-            value={mockStats.missionsCompleted}
-            icon={
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            }
-          />
-        </div>
-
-        {/* Featured Missions Section */}
-        <div className="space-y-6">
-          <SectionHeader
-            title="Featured Missions"
-            icon="🚀"
-            action={
-              <span className="inline-flex items-center gap-1">
-                View All
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+      <main className="max-w-[1400px] mx-auto px-6 py-8">
+        <div className="flex gap-8">
+          {/* Left Section - Main Content */}
+          <div className="flex-1 space-y-6">
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-2">
+              {filterTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveFilter(tab.id)}
+                  className={`px-6 py-2.5 rounded-full font-medium transition-all ${
+                    activeFilter === tab.id
+                      ? "bg-rose-600 text-white shadow-md"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Dropdowns */}
+            <div className="flex gap-4">
+              <select
+                value={selectedConstituency}
+                onChange={(e) => setSelectedConstituency(e.target.value)}
+                className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+              >
+                <option value="all">All Constituencies</option>
+                <option value="kathmandu-3">Kathmandu-3</option>
+                <option value="lalitpur-2">Lalitpur-2</option>
+                <option value="bhaktapur-1">Bhaktapur-1</option>
+              </select>
+
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
+              >
+                <option value="all">All Categories</option>
+                <option value="health">Health</option>
+                <option value="education">Education</option>
+                <option value="infrastructure">Infrastructure</option>
+                <option value="environment">Environment</option>
+                <option value="governance">Governance</option>
+              </select>
+            </div>
+
+            {/* Active Missions Header */}
+            <h2 className="text-2xl font-bold text-gray-900">
+              Active Missions
+            </h2>
+
+            {/* Mission Cards */}
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="inline-block w-8 h-8 border-4 border-rose-600 border-t-transparent rounded-full animate-spin" />
+                <p className="mt-4 text-gray-600">Loading missions...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {activeMissions.map((mission) => (
+                  <ActiveMissionCard
+                    key={mission.id}
+                    title={mission.title}
+                    difficulty={mission.difficulty}
+                    resetTime={mission.resetTime}
+                    progress={mission.progress}
+                    points={mission.points}
+                    recurring={mission.recurring}
+                    onComplete={() => handleCompleteMission(mission.id)}
                   />
-                </svg>
-              </span>
-            }
-          />
+                ))}
+              </div>
+            )}
+          </div>
 
-          <MissionGrid
-            missions={mockMissions.filter((m) => m.isFeatured)}
-            onStart={handleMissionStart}
-            onViewDetails={handleMissionDetails}
-          />
-        </div>
-
-        {/* All Missions Section */}
-        <div className="space-y-6">
-          <SectionHeader title="All Missions" icon="📋" />
-
-          <MissionGrid
-            missions={mockMissions}
-            onStart={handleMissionStart}
-            onViewDetails={handleMissionDetails}
-          />
-        </div>
-
-        {/* Load More Button */}
-        <div className="flex justify-center pt-4">
-          <Button variant="outline" size="lg">
-            Load More Missions
-          </Button>
+          {/* Right Sidebar - Activity Feed */}
+          <div className="w-[380px] hidden lg:block">
+            <ActivityFeed activities={recentActivities} />
+          </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-16 py-8 border-t border-[#ECE7E4]">
-        <div className="max-w-[1280px] mx-auto px-6 text-center text-sm text-[#94A3B8]">
-          © 2026 Janamat Rewards. Building civic engagement through meaningful
-          participation.
-        </div>
-      </footer>
+      {/* Mission Modal */}
+      <MissionModal
+        isOpen={selectedMission !== null}
+        onClose={() => setSelectedMission(null)}
+        title={selectedMissionData?.title || "Complete Mission"}
+        actions={missionActions}
+        onCompleteAction={handleCompleteAction}
+      />
     </div>
   );
 }
