@@ -1,8 +1,94 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  /* Colors */
+  --color-civic-bg: #f7f4f2;
+  --color-civic-card: #ffffff;
+  --color-civic-muted: #f9fafb;
+
+  --color-civic-primary: #e11d48;
+  --color-civic-primary-hover: #be123c;
+  --color-civic-primary-light: #fff1f2;
+
+  --color-civic-secondary: #6366f1;
+  --color-civic-secondary-hover: #4f46e5;
+  --color-civic-secondary-light: #eef2ff;
+
+  --color-civic-border: #ece7e4;
+  --color-civic-border-light: #f1f5f9;
+  --color-civic-border-dark: #cbd5e1;
+
+  --color-civic-text: #0f172a;
+  --color-civic-text-secondary: #475569;
+  --color-civic-text-muted: #94a3b8;
+
+  --color-status-active-bg: #dcfce7;
+  --color-status-active-text: #166534;
+  --color-status-active-dot: #22c55e;
+  --color-status-warning-bg: #fef3c7;
+  --color-status-warning-text: #92400e;
+  --color-status-error-bg: #fee2e2;
+  --color-status-error-text: #991b1b;
+
+  --color-category-health-bg: #fff1f2;
+  --color-category-health-text: #e11d48;
+  --color-category-education-bg: #eef2ff;
+  --color-category-education-text: #6366f1;
+  --color-category-infra-bg: #fef3c7;
+  --color-category-infra-text: #92400e;
+  --color-category-environment-bg: #dcfce7;
+  --color-category-environment-text: #166534;
+  --color-category-governance-bg: #f3e8ff;
+  --color-category-governance-text: #7c3aed;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px rgba(16, 24, 40, 0.08);
+  --shadow-card-hover: 0 20px 40px rgba(16, 24, 40, 0.12);
+
+  /* Layout */
+  --width-container: 1280px;
+  --width-content: 1120px;
+
+  /* Font */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Animations */
+  --animate-fade-in: fadeIn 200ms ease-out;
+  --animate-slide-up: slideUp 300ms ease-out;
+  --animate-slide-down: slideDown 300ms ease-out;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
 * {
   box-sizing: border-box;
