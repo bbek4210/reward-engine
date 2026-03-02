@@ -223,17 +223,17 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <main className="max-w-[1400px] mx-auto px-6 py-8">
-        <div className="flex gap-8">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Left Section - Main Content */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-4 sm:space-y-6 min-w-0">
             {/* Filter Tabs */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {filterTabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveFilter(tab.id)}
-                  className={`px-6 py-2.5 cursor-pointer rounded-full font-medium transition-all ${
+                  className={`px-4 sm:px-6 py-2 sm:py-2.5 cursor-pointer rounded-full text-sm sm:text-base font-medium transition-all ${
                     activeFilter === tab.id
                       ? "bg-rose-600 cursor-pointer text-white shadow-md"
                       : "bg-white cursor-pointer text-gray-700 hover:bg-gray-50"
@@ -245,7 +245,7 @@ export default function Dashboard() {
             </div>
 
             {/* Dropdowns */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <select
                 value={selectedConstituency}
                 onChange={(e) => setSelectedConstituency(e.target.value)}
@@ -307,7 +307,7 @@ export default function Dashboard() {
           </div>
 
           {/* Right Sidebar - Activity Feed */}
-          <div className="w-[380px] hidden lg:block">
+          <div className="w-full lg:w-[380px] lg:flex-shrink-0">
             <ActivityFeed activities={recentActivities} />
           </div>
         </div>

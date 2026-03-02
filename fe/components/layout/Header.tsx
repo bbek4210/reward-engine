@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   Info,
   Trash2,
+  Menu,
+  X,
 } from "lucide-react";
 
 function timeAgo(date: Date): string {
@@ -79,6 +81,7 @@ export default function Header({
   };
   const [showNotifications, setShowNotifications] = useState(false);
   const [showWalletMenu, setShowWalletMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const walletMenuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -141,13 +144,13 @@ export default function Header({
 
   return (
     <header className="bg-white border-b border-[#ECE7E4] sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Left: Logo + Branding */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#E11D48] rounded-xl flex items-center justify-center">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#E11D48] rounded-xl flex items-center justify-center flex-shrink-0">
               <svg
-                className="w-6 h-6 text-white"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -163,11 +166,11 @@ export default function Header({
             <div>
               <Link
                 href="/"
-                className="text-xl font-bold text-[#0F172A] hover:text-[#E11D48] transition-colors"
+                className="text-base sm:text-xl font-bold text-[#0F172A] hover:text-[#E11D48] transition-colors"
               >
                 Janamat Rewards
               </Link>
-              <p className="text-xs text-[#94A3B8]">
+              <p className="hidden sm:block text-xs text-[#94A3B8]">
                 Earn points for meaningful civic participation
               </p>
             </div>
@@ -191,10 +194,10 @@ export default function Header({
           </nav>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Points Display */}
             {walletConnected && (
-              <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-full border border-rose-100">
+              <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-full border border-rose-100">
                 <div className="w-6 h-6 bg-rose-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-xs font-bold">≡</span>
                 </div>
@@ -205,7 +208,7 @@ export default function Header({
             )}
 
             {/* Notifications */}
-            <div className="relative" ref={notifRef}>
+            <div className="relative hidden sm:block" ref={notifRef}>
               <button
                 className="w-10 h-10 rounded-full bg-white border border-[#ECE7E4] flex items-center justify-center hover:bg-gray-50 transition-colors relative"
                 onClick={() => {
@@ -314,15 +317,71 @@ export default function Header({
               </div>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={handleConnect}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleConnect}
+                  className="hidden sm:flex"
+                >
                   <Wallet className="w-4 h-4 mr-2" />
                   Connect Wallet
                 </Button>
+                <button
+                  onClick={handleConnect}
+                  className="sm:hidden w-9 h-9 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center hover:bg-rose-100 transition-colors"
+                >
+                  <Wallet className="w-4 h-4 text-rose-600" />
+                </button>
               </>
             )}
+
+            {/* Hamburger — mobile only */}
+            <button
+              className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
+              onClick={() => setShowMobileMenu((v) => !v)}
+              aria-label="Toggle menu"
+            >
+              {showMobileMenu ? (
+                <X className="w-5 h-5 text-gray-700" />
+              ) : (
+                <Menu className="w-5 h-5 text-gray-700" />
+              )}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Nav Dropdown */}
+      {showMobileMenu && (
+        <div className="md:hidden border-t border-[#ECE7E4] bg-white">
+          <nav className="flex flex-col py-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setShowMobileMenu(false)}
+                className={`px-5 py-3 text-sm font-medium transition-colors ${
+                  isActiveLink(link.href)
+                    ? "text-[#E11D48] bg-rose-50 border-l-2 border-[#E11D48]"
+                    : "text-gray-600 hover:text-[#E11D48] hover:bg-gray-50"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            {walletConnected && (
+              <div className="px-5 py-3 flex items-center gap-2 border-t border-gray-100 mt-1">
+                <div className="w-5 h-5 bg-rose-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] font-bold">≡</span>
+                </div>
+                <span className="text-sm font-bold text-rose-600">
+                  {loading ? "..." : points.toLocaleString()} pts
+                </span>
+              </div>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

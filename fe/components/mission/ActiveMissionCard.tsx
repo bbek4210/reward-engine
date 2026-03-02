@@ -31,7 +31,7 @@ export default function ActiveMissionCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-shadow">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">

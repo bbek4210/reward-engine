@@ -177,11 +177,11 @@ export default function RedeemPage() {
       />
 
       {/* Main Content */}
-      <main className="max-w-[1200px] mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Top Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Current Balance Card */}
-          <div className="bg-white rounded-2xl p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100">
             <div className="text-sm font-semibold text-gray-500 uppercase mb-2">
               CURRENT BALANCE
             </div>
@@ -202,7 +202,7 @@ export default function RedeemPage() {
           </div>
 
           {/* Featured Prize Card */}
-          <div className="bg-gradient-to-br from-rose-500 to-rose-700 rounded-2xl p-8 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-br from-rose-500 to-rose-700 rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
 
@@ -278,69 +278,71 @@ export default function RedeemPage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
-                    Date
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
-                    Points Used
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
-                    SOL Amount
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {redemptionHistory.length === 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px]">
+                <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                          <Wallet className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <div>
-                          <p className="text-gray-900 font-semibold mb-1">
-                            No redemptions yet
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Complete missions to earn points, then redeem them
-                            for SOL
-                          </p>
-                        </div>
-                      </div>
-                    </td>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
+                      Date
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
+                      Points Used
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
+                      SOL Amount
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
+                      Status
+                    </th>
                   </tr>
-                ) : (
-                  redemptionHistory.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {item.date}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        {item.points} pts
-                      </td>
-                      <td className="px-6 py-4 text-sm font-semibold text-rose-600">
-                        {item.sol} SOL
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                            item.status,
-                          )}`}
-                        >
-                          {item.status}
-                        </span>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {redemptionHistory.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Wallet className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <div>
+                            <p className="text-gray-900 font-semibold mb-1">
+                              No redemptions yet
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Complete missions to earn points, then redeem them
+                              for SOL
+                            </p>
+                          </div>
+                        </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    redemptionHistory.map((item, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          {item.date}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                          {item.points} pts
+                        </td>
+                        <td className="px-6 py-4 text-sm font-semibold text-rose-600">
+                          {item.sol} SOL
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                              item.status,
+                            )}`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </main>
