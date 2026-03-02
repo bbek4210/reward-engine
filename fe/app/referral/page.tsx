@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/contexts/ToastContext";
 import { userApi } from "@/lib/api";
@@ -93,7 +94,9 @@ const TIERS = [
 ];
 
 export default function ReferralPage() {
-  const wallet = usePhantomWallet();
+  const { connected, publicKey, disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
+  const wallet = { connected, address: publicKey?.toString() ?? null };
   useUser();
   const toast = useToast();
   const [copied, setCopied] = useState(false);
@@ -116,19 +119,10 @@ export default function ReferralPage() {
       .finally(() => setReferralsLoading(false));
   }, [wallet.connected, wallet.address]);
 
-  const handleConnectWallet = async () => {
-    if (!wallet.isPhantomInstalled) {
-      toast(
-        "Phantom wallet not found. Please install it from phantom.app",
-        "error",
-      );
-      return;
-    }
-    await wallet.connect();
-  };
+  const handleConnectWallet = () => setVisible(true);
 
   const handleDisconnectWallet = async () => {
-    await wallet.disconnect();
+    await disconnect();
   };
 
   const referralCode = wallet.address
@@ -169,8 +163,6 @@ export default function ReferralPage() {
         variant="dashboard"
         onConnectWallet={handleConnectWallet}
         onDisconnectWallet={handleDisconnectWallet}
-        walletConnected={wallet.connected}
-        walletAddress={wallet.address || undefined}
       />
 
       <main className="max-w-[1200px] mx-auto px-6 py-8 space-y-8">

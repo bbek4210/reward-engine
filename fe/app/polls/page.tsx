@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useToast } from "@/contexts/ToastContext";
 import { pollApi } from "@/lib/api";
 import Header from "@/components/layout/Header";
@@ -28,7 +29,8 @@ const SORTS = [
 ];
 
 export default function PollsPage() {
-  const wallet = usePhantomWallet();
+  const { connected, disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
   const toast = useToast();
 
   const [polls, setPolls] = useState<Poll[]>([]);
@@ -48,9 +50,15 @@ export default function PollsPage() {
         if (res.success && res.data) setPolls(res.data as Poll[]);
         else toast("Failed to load polls", "error");
       })
-      .catch(() => { if (!cancelled) toast("Failed to load polls", "error"); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) toast("Failed to load polls", "error");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
@@ -76,15 +84,11 @@ export default function PollsPage() {
     0,
   );
 
-  const handleConnectWallet = async () => {
-    if (!wallet.isPhantomInstalled) {
-      toast("Phantom wallet not found. Please install it from phantom.app", "error");
-      return;
-    }
-    await wallet.connect();
-  };
+  const handleConnectWallet = () => setVisible(true);
 
-  const handleDisconnectWallet = async () => { await wallet.disconnect(); };
+  const handleDisconnectWallet = async () => {
+    await disconnect();
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F4F2]">
@@ -92,8 +96,6 @@ export default function PollsPage() {
         variant="dashboard"
         onConnectWallet={handleConnectWallet}
         onDisconnectWallet={handleDisconnectWallet}
-        walletConnected={wallet.connected}
-        walletAddress={wallet.address || undefined}
       />
 
       <main className="max-w-[1400px] mx-auto px-6 py-8">
@@ -107,12 +109,24 @@ export default function PollsPage() {
         {/* Stats Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Active Polls", value: loading ? "…" : activeCount.toString() },
-            { label: "Total Votes", value: loading ? "…" : totalVotes.toLocaleString() },
-            { label: "Points Available", value: loading ? "…" : `${pointsAvailable}+` },
-            { label: "Your Votes", value: wallet.connected ? "0" : "—" },
+            {
+              label: "Active Polls",
+              value: loading ? "…" : activeCount.toString(),
+            },
+            {
+              label: "Total Votes",
+              value: loading ? "…" : totalVotes.toLocaleString(),
+            },
+            {
+              label: "Points Available",
+              value: loading ? "…" : `${pointsAvailable}+`,
+            },
+            { label: "Your Votes", value: connected ? "0" : "—" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-xl p-4 border border-gray-100 text-center">
+            <div
+              key={stat.label}
+              className="bg-white rounded-xl p-4 border border-gray-100 text-center"
+            >
               <p className="text-2xl font-bold text-[#E11D48]">{stat.value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
             </div>
@@ -171,7 +185,9 @@ export default function PollsPage() {
             </div>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as "all" | "active" | "closed")}
+              onChange={(e) =>
+                setStatus(e.target.value as "all" | "active" | "closed")
+              }
               className="px-3 py-1.5 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-500"
             >
               <option value="all">All Status</option>
@@ -182,19 +198,26 @@ export default function PollsPage() {
         </div>
 
         <p className="text-sm text-gray-500 mb-4">
-          Showing <span className="font-semibold text-gray-800">{filtered.length}</span> polls
+          Showing{" "}
+          <span className="font-semibold text-gray-800">{filtered.length}</span>{" "}
+          polls
         </p>
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-gray-100 animate-pulse h-64" />
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-gray-100 animate-pulse h-64"
+              />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-400 text-lg">No polls found</p>
-            <p className="text-gray-400 text-sm mt-1">Try changing your filters</p>
+            <p className="text-gray-400 text-sm mt-1">
+              Try changing your filters
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

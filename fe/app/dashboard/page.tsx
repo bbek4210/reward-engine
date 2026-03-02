@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/contexts/ToastContext";
 import Header from "@/components/layout/Header";
@@ -47,7 +48,9 @@ interface ActiveMission {
  * Dashboard Page - Main user hub for active missions and participation
  */
 export default function Dashboard() {
-  const wallet = usePhantomWallet();
+  const { connected, publicKey, disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
+  const wallet = { connected, address: publicKey?.toString() ?? null };
   const { addPoints } = useUser();
   const router = useRouter();
   const toast = useToast();
@@ -115,19 +118,10 @@ export default function Dashboard() {
     loadMissions();
   }, []);
 
-  const handleConnectWallet = async () => {
-    if (!wallet.isPhantomInstalled) {
-      toast(
-        "Phantom wallet not found. Please install it from phantom.app",
-        "error",
-      );
-      return;
-    }
-    await wallet.connect();
-  };
+  const handleConnectWallet = () => setVisible(true);
 
   const handleDisconnectWallet = async () => {
-    await wallet.disconnect();
+    await disconnect();
   };
 
   const handleVerifyCitizen = () => {
@@ -226,8 +220,6 @@ export default function Dashboard() {
         onConnectWallet={handleConnectWallet}
         onDisconnectWallet={handleDisconnectWallet}
         onVerifyCitizen={handleVerifyCitizen}
-        walletConnected={wallet.connected}
-        walletAddress={wallet.address || undefined}
       />
 
       {/* Main Content */}

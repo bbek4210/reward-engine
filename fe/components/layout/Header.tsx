@@ -7,6 +7,8 @@ import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useNotifications } from "@/contexts/ToastContext";
 import type { ToastType } from "@/contexts/ToastContext";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import {
   Wallet,
   Bell,
@@ -57,9 +59,24 @@ export interface HeaderProps {
 export default function Header({
   onConnectWallet,
   onDisconnectWallet,
-  walletConnected = false,
-  walletAddress,
 }: HeaderProps) {
+  const {
+    connected: walletConnected,
+    publicKey,
+    disconnect: disconnectWallet,
+  } = useWallet();
+  const { setVisible } = useWalletModal();
+  const walletAddress = publicKey?.toString();
+
+  const handleConnect = () => {
+    if (onConnectWallet) onConnectWallet();
+    setVisible(true);
+  };
+
+  const handleDisconnect = async () => {
+    await disconnectWallet();
+    if (onDisconnectWallet) onDisconnectWallet();
+  };
   const [showNotifications, setShowNotifications] = useState(false);
   const [showWalletMenu, setShowWalletMenu] = useState(false);
   const walletMenuRef = useRef<HTMLDivElement>(null);
@@ -286,7 +303,7 @@ export default function Header({
                     <button
                       onClick={() => {
                         setShowWalletMenu(false);
-                        onDisconnectWallet?.();
+                        handleDisconnect();
                       }}
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
                     >
@@ -298,7 +315,7 @@ export default function Header({
               </div>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={onConnectWallet}>
+                <Button variant="outline" size="sm" onClick={handleConnect}>
                   <Wallet className="w-4 h-4 mr-2" />
                   Connect Wallet
                 </Button>

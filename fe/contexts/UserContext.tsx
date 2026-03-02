@@ -7,7 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { userApi } from "@/lib/api";
 
 interface UserContextType {
@@ -34,7 +34,8 @@ interface UserData {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const wallet = usePhantomWallet();
+  const { connected, publicKey } = useWallet();
+  const wallet = { connected, address: publicKey?.toString() ?? null };
   const [points, setPoints] = useState(0);
   const [streak, setStreak] = useState(0);
   const [weeklyRank, setWeeklyRank] = useState(999);

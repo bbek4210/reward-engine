@@ -26,7 +26,8 @@ import {
   Send,
   CheckCircle,
 } from "lucide-react";
-import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useUser } from "@/contexts/UserContext";
 import Header from "@/components/layout/Header";
 import { pollApi } from "@/lib/api";
@@ -49,7 +50,9 @@ type TimeFilter = "1H" | "24H" | "7D" | "All";
 export default function PollDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const wallet = usePhantomWallet();
+  const { connected, publicKey, disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
+  const wallet = { connected, address: publicKey?.toString() ?? null };
   const { addPoints } = useUser();
   const toast = useToast();
 
@@ -547,7 +550,7 @@ export default function PollDetailPage() {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleComment()}
-                      placeholder="Share your thoughts... (+1 pts)"
+                      placeholder="Share your thoughts..."
                       className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                     />
                     <button

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useToast } from "@/contexts/ToastContext";
 import { leaderboardApi } from "@/lib/api";
 import Header from "@/components/layout/Header";
@@ -29,7 +30,8 @@ import type {
  * Citizens list is filtered client-side by the search query.
  */
 export default function Leaderboard() {
-  const wallet = usePhantomWallet();
+  const { disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
   const toast = useToast();
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("weekly");
@@ -97,19 +99,10 @@ export default function Leaderboard() {
     : citizenLeaderboard;
 
   /* ── Wallet handlers ── */
-  const handleConnectWallet = async () => {
-    if (!wallet.isPhantomInstalled) {
-      toast(
-        "Phantom wallet not found. Please install it from phantom.app",
-        "error",
-      );
-      return;
-    }
-    await wallet.connect();
-  };
+  const handleConnectWallet = () => setVisible(true);
 
   const handleDisconnectWallet = async () => {
-    await wallet.disconnect();
+    await disconnect();
   };
 
   const handleVerifyCitizen = () => {
@@ -124,8 +117,6 @@ export default function Leaderboard() {
         onConnectWallet={handleConnectWallet}
         onDisconnectWallet={handleDisconnectWallet}
         onVerifyCitizen={handleVerifyCitizen}
-        walletConnected={wallet.connected}
-        walletAddress={wallet.address || undefined}
       />
 
       {/* Main Content */}

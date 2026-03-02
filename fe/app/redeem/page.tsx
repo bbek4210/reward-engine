@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { usePhantomWallet } from "@/hooks/usePhantomWallet";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/contexts/ToastContext";
 import Header from "@/components/layout/Header";
@@ -28,7 +29,9 @@ interface RedemptionHistory {
  * Allows users to convert points to SOL and view redemption history
  */
 export default function RedeemPage() {
-  const wallet = usePhantomWallet();
+  const { connected, publicKey, disconnect } = useWallet();
+  const { setVisible } = useWalletModal();
+  const wallet = { connected, address: publicKey?.toString() ?? null };
   const { points, addPoints } = useUser();
   const toast = useToast();
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -80,19 +83,10 @@ export default function RedeemPage() {
     },
   ];
 
-  const handleConnectWallet = async () => {
-    if (!wallet.isPhantomInstalled) {
-      toast(
-        "Phantom wallet not found. Please install it from phantom.app",
-        "error",
-      );
-      return;
-    }
-    await wallet.connect();
-  };
+  const handleConnectWallet = () => setVisible(true);
 
   const handleDisconnectWallet = async () => {
-    await wallet.disconnect();
+    await disconnect();
   };
 
   const handleVerifyCitizen = () => {
@@ -179,8 +173,6 @@ export default function RedeemPage() {
         onConnectWallet={handleConnectWallet}
         onDisconnectWallet={handleDisconnectWallet}
         onVerifyCitizen={handleVerifyCitizen}
-        walletConnected={wallet.connected}
-        walletAddress={wallet.address || undefined}
       />
 
       {/* Main Content */}
