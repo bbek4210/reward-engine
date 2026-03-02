@@ -1,4 +1,4 @@
-import { Clock } from "lucide-react";
+import { Clock, CheckCircle2 } from "lucide-react";
 import Button from "../ui/Button";
 import Pill from "../ui/Pill";
 
@@ -67,10 +67,17 @@ export default function ActiveMissionCard({
         </div>
       </div>
 
-      {/* Complete Button */}
-      <Button onClick={onComplete} variant="primary" className="w-full">
-        Complete
-      </Button>
+      {/* Complete Button / Completed message */}
+      {progress.percentage >= 100 ? (
+        <div className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-green-50 border border-green-200 text-green-700 font-semibold text-sm">
+          <CheckCircle2 className="w-5 h-5 text-green-500" />
+          Mission Completed!
+        </div>
+      ) : (
+        <Button onClick={onComplete} variant="primary" className="w-full">
+          Complete
+        </Button>
+      )}
     </div>
   );
 }

@@ -32,30 +32,39 @@ export default function PollCard({ poll }: PollCardProps) {
         <div
           className={`relative h-44 bg-gradient-to-br ${bannerGradient} flex items-end overflow-hidden`}
         >
-          {/* Mountain/building sketch overlay */}
-          <div className="absolute inset-0 opacity-20">
-            <svg
-              viewBox="0 0 400 176"
-              className="w-full h-full"
-              preserveAspectRatio="xMidYMid slice"
-            >
-              <path
-                d="M0 176 L80 60 L140 100 L200 20 L260 80 L320 40 L400 120 L400 176 Z"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M0 176 L60 90 L120 130 L180 50 L240 100 L300 60 L360 110 L400 80 L400 176 Z"
-                fill="none"
-                stroke="white"
-                strokeWidth="1"
-                opacity="0.5"
-              />
-            </svg>
-          </div>
+          {/* Full-cover candidate photo */}
+          {topTwo[0]?.image ? (
+            <img
+              src={topTwo[0].image}
+              alt={topTwo[0].label}
+              className="absolute inset-0 w-full h-full object-cover object-top"
+            />
+          ) : (
+            /* Mountain/building sketch overlay — only when no photo */
+            <div className="absolute inset-0 opacity-20">
+              <svg
+                viewBox="0 0 400 176"
+                className="w-full h-full"
+                preserveAspectRatio="xMidYMid slice"
+              >
+                <path
+                  d="M0 176 L80 60 L140 100 L200 20 L260 80 L320 40 L400 120 L400 176 Z"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M0 176 L60 90 L120 130 L180 50 L240 100 L300 60 L360 110 L400 80 L400 176 Z"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1"
+                  opacity="0.5"
+                />
+              </svg>
+            </div>
+          )}
           {/* Constituency Badge */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
             <span className="bg-[#E11D48] text-white font-bold text-sm px-3 py-1.5 rounded">
               {poll.bannerLabel || poll.constituency}
             </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Pill from "../ui/Pill";
 import { cn } from "@/lib/utils";
 import type { CitizenLeaderboard } from "@/types";
@@ -7,6 +8,31 @@ import type { CitizenLeaderboard } from "@/types";
 export interface CitizenLeaderboardListProps {
   entries: CitizenLeaderboard[];
   maxEntries?: number;
+}
+
+function truncateAddress(addr: string) {
+  if (addr.length <= 12) return addr;
+  return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
+}
+
+function AddressCell({ address }: { address: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span
+      className="relative inline-block"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span className="font-mono text-sm font-bold text-[#0F172A] cursor-default">
+        {truncateAddress(address)}
+      </span>
+      {show && (
+        <span className="absolute left-0 top-full mt-1.5 z-50 whitespace-nowrap bg-gray-900 text-white text-xs font-mono px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">
+          {address}
+        </span>
+      )}
+    </span>
+  );
 }
 
 /**
@@ -84,16 +110,22 @@ export default function CitizenLeaderboardList({
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366F1] to-[#4F46E5] flex items-center justify-center text-white font-bold ring-2 ring-white">
-                        {entry.name.charAt(0).toUpperCase()}
+                        {(entry.walletAddress ?? entry.name)
+                          .charAt(0)
+                          .toUpperCase()}
                       </div>
                     )}
                   </div>
 
-                  {/* Name & Handle */}
+                  {/* Wallet Address & constituency */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-base font-bold text-[#0F172A] truncate">
-                      {entry.name}
-                    </h4>
+                    {entry.walletAddress ? (
+                      <AddressCell address={entry.walletAddress} />
+                    ) : (
+                      <h4 className="text-base font-bold text-[#0F172A] truncate">
+                        {entry.name}
+                      </h4>
+                    )}
                     <p className="text-xs text-[#94A3B8]">
                       {entry.handle ? `@${entry.handle}` : entry.constituency}
                     </p>

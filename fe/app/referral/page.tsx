@@ -152,7 +152,7 @@ export default function ReferralPage() {
 
   const handleTwitterShare = () => {
     const text = encodeURIComponent(
-      `I'm participating in civic governance on Janamat Rewards! Join me and earn points for voting on community polls. Use my referral link: ${referralLink}`,
+      `I'm participating in civic governance on Janamat Rewards Engine! Join me and earn points for voting on community polls. Use my referral link: ${referralLink}`,
     );
     window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank");
   };
@@ -173,7 +173,7 @@ export default function ReferralPage() {
           <div className="relative z-10">
             <h1 className="text-3xl font-bold mb-2">Refer & Earn</h1>
             <p className="text-white/80 text-lg mb-6">
-              Invite friends to Janamat Rewards. You earn{" "}
+              Invite friends to Janamat Rewards Engine. You earn{" "}
               <span className="font-bold text-white">5 pts</span> per successful
               referral. They get a{" "}
               <span className="font-bold text-white">2 pts</span> welcome bonus.

@@ -675,6 +675,13 @@ export default function PollDetailPage() {
                         {voted === opt.id && (
                           <CheckCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                         )}
+                        {opt.image && (
+                          <img
+                            src={opt.image}
+                            alt={opt.label}
+                            className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-gray-200"
+                          />
+                        )}
                         <span className="text-sm font-medium text-gray-800">
                           {opt.label}
                         </span>
@@ -741,7 +748,16 @@ export default function PollDetailPage() {
                                 Processing...
                               </div>
                             ) : (
-                              opt.label
+                              <span className="flex items-center gap-2">
+                                {opt.image && (
+                                  <img
+                                    src={opt.image}
+                                    alt={opt.label}
+                                    className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                                  />
+                                )}
+                                {opt.label}
+                              </span>
                             )}
                           </button>
                         ))}

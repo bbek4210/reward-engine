@@ -127,7 +127,6 @@ export default function Header({
   };
 
   const navLinks = [
-    { href: "/", label: "Home" },
     { href: "/dashboard", label: "Missions" },
     { href: "/polls", label: "Polls" },
     { href: "/leaderboard", label: "Leaderboard" },

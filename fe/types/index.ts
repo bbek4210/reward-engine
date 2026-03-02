@@ -79,6 +79,7 @@ export interface CitizenLeaderboard extends LeaderboardEntry {
     type: 'citizen';
     constituency: string;
     streakDays: number;
+    walletAddress?: string;
 }
 
 export interface Stats {
@@ -110,6 +111,7 @@ export interface PollOption {
     votes: number;
     percentage: number;
     color?: string;
+    image?: string;
 }
 
 export interface PollComment {

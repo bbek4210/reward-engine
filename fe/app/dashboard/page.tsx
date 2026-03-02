@@ -233,10 +233,10 @@ export default function Dashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveFilter(tab.id)}
-                  className={`px-6 py-2.5 rounded-full font-medium transition-all ${
+                  className={`px-6 py-2.5 cursor-pointer rounded-full font-medium transition-all ${
                     activeFilter === tab.id
-                      ? "bg-rose-600 text-white shadow-md"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
+                      ? "bg-rose-600 cursor-pointer text-white shadow-md"
+                      : "bg-white cursor-pointer text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   {tab.label}

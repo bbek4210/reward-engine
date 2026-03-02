@@ -38,7 +38,7 @@ export const mockPolls: Poll[] = [
         daysLeft: 4,
         totalVotes: 510,
         options: [
-            { id: 'o1', label: 'Balen Shah', votes: 434, percentage: 85, color: '#E11D48' },
+            { id: 'o1', label: 'Balen Shah', votes: 434, percentage: 85, color: '#E11D48', image: '/balen.jpeg' },
             { id: 'o2', label: 'K.P. Sharma Oli', votes: 51, percentage: 10, color: '#818CF8' },
             { id: 'o3', label: 'Others', votes: 25, percentage: 5, color: '#94A3B8' },
         ],
