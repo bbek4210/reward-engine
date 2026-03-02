@@ -246,8 +246,19 @@ export default function PollDetailPage() {
     setIsVoting(false);
   };
 
+  // True when the connected wallet has already posted a comment on this poll
+  const hasCommented =
+    !!wallet.address &&
+    comments.some(
+      (c) => c.walletAddress?.toLowerCase() === wallet.address!.toLowerCase(),
+    );
+
   const handleComment = async () => {
     if (!wallet.connected || !wallet.address || !newComment.trim()) return;
+    if (hasCommented) {
+      toast("You have already commented on this poll", "error");
+      return;
+    }
     setIsCommenting(true);
     const authorLabel = wallet.address
       ? `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}`
@@ -540,32 +551,40 @@ export default function PollDetailPage() {
 
               {/* Comment input */}
               {wallet.connected ? (
-                <div className="flex gap-3 mb-5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-purple-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
-                    {wallet.address?.slice(0, 2).toUpperCase()}
+                hasCommented ? (
+                  <div className="bg-gray-50 rounded-xl p-4 mb-5 text-center">
+                    <p className="text-sm text-gray-500">
+                      You have already commented on this poll.
+                    </p>
                   </div>
-                  <div className="flex-1 flex gap-2">
-                    <input
-                      type="text"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleComment()}
-                      placeholder="Share your thoughts..."
-                      className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
-                    />
-                    <button
-                      onClick={handleComment}
-                      disabled={isCommenting || !newComment.trim()}
-                      className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl text-sm font-medium flex items-center gap-1.5 transition-colors"
-                    >
-                      {isCommenting ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Send className="w-4 h-4" />
-                      )}
-                    </button>
+                ) : (
+                  <div className="flex gap-3 mb-5">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-purple-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
+                      {wallet.address?.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        type="text"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleComment()}
+                        placeholder="Share your thoughts..."
+                        className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      />
+                      <button
+                        onClick={handleComment}
+                        disabled={isCommenting || !newComment.trim()}
+                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl text-sm font-medium flex items-center gap-1.5 transition-colors"
+                      >
+                        {isCommenting ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )
               ) : (
                 <div className="bg-gray-50 rounded-xl p-4 mb-5 text-center">
                   <p className="text-sm text-gray-500">
