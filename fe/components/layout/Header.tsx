@@ -283,10 +283,10 @@ export default function Header({
               <div className="relative" ref={walletMenuRef}>
                 <button
                   onClick={() => setShowWalletMenu(!showWalletMenu)}
-                  className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-indigo-500 to-purple-600 rounded-full shadow-md hover:shadow-lg transition-all"
+                  className="flex items-center gap-2 px-3 py-2 bg-linear-to-r from-indigo-500 to-purple-600 rounded-full shadow-md hover:shadow-lg transition-all"
                 >
-                  <Wallet className="w-4 h-4 text-white" />
-                  <span className="text-sm font-semibold text-white">
+                  <Wallet className="w-4 h-4 text-white shrink-0" />
+                  <span className="hidden sm:inline text-sm font-semibold text-white">
                     {truncateAddress(walletAddress)}
                   </span>
                 </button>
@@ -316,23 +316,13 @@ export default function Header({
                 )}
               </div>
             ) : (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleConnect}
-                  className="hidden sm:flex"
-                >
-                  <Wallet className="w-4 h-4 mr-2" />
-                  Connect Wallet
-                </Button>
-                <button
-                  onClick={handleConnect}
-                  className="sm:hidden w-9 h-9 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center hover:bg-rose-100 transition-colors"
-                >
-                  <Wallet className="w-4 h-4 text-rose-600" />
-                </button>
-              </>
+              <button
+                onClick={handleConnect}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+              >
+                <Wallet className="w-4 h-4 text-rose-600 shrink-0" />
+                <span className="hidden sm:inline">Connect Wallet</span>
+              </button>
             )}
 
             {/* Hamburger — mobile only */}
