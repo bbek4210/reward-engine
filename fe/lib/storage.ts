@@ -78,4 +78,83 @@ export const STORAGE_KEYS = {
     WEEK_START_POINTS: 'week_start_points',
     USER_PREFERENCES: 'user_preferences',
     LAST_SYNC: 'last_sync',
+    // Tracks { [missionId]: number } — actions completed per mission
+    MISSION_PROGRESS: 'mission_progress',
+    // Poll persistence
+    POLL_VOTES: 'poll_votes',           // { [pollId]: optionId }
+    POLL_LOCAL_VOTES: 'poll_local_votes', // { [pollId]: { [optionId]: number } }
+    POLL_COMMENTS: 'poll_comments',     // { [pollId]: PollComment[] }
+    POLL_LIKED: 'poll_liked',           // { [pollId]: string[] }
 } as const;
+
+/** Increment the stored action count for a mission and return the new count. */
+export function incrementMissionProgress(missionId: string): number {
+    const current = storage.getJSON<Record<string, number>>(
+        STORAGE_KEYS.MISSION_PROGRESS,
+        {},
+    );
+    const next = (current[missionId] ?? 0) + 1;
+    storage.setJSON(STORAGE_KEYS.MISSION_PROGRESS, {
+        ...current,
+        [missionId]: next,
+    });
+    return next;
+}
+
+/** Read the stored action count for every mission. */
+export function getMissionProgress(): Record<string, number> {
+    return storage.getJSON<Record<string, number>>(
+        STORAGE_KEYS.MISSION_PROGRESS,
+        {},
+    );
+}
+
+// ── Poll persistence helpers ──────────────────────────────────────────────────
+
+/** Save the option the user voted for on a specific poll. */
+export function savePollVote(pollId: string, optionId: string): void {
+    const all = storage.getJSON<Record<string, string>>(STORAGE_KEYS.POLL_VOTES, {});
+    storage.setJSON(STORAGE_KEYS.POLL_VOTES, { ...all, [pollId]: optionId });
+}
+
+/** Return the optionId the user previously voted for, or null. */
+export function getPollVote(pollId: string): string | null {
+    const all = storage.getJSON<Record<string, string>>(STORAGE_KEYS.POLL_VOTES, {});
+    return all[pollId] ?? null;
+}
+
+/** Save the local vote-count deltas for a poll. */
+export function savePollLocalVotes(pollId: string, localVotes: Record<string, number>): void {
+    const all = storage.getJSON<Record<string, Record<string, number>>>(STORAGE_KEYS.POLL_LOCAL_VOTES, {});
+    storage.setJSON(STORAGE_KEYS.POLL_LOCAL_VOTES, { ...all, [pollId]: localVotes });
+}
+
+/** Load previously saved local vote deltas for a poll. */
+export function getPollLocalVotes(pollId: string): Record<string, number> {
+    const all = storage.getJSON<Record<string, Record<string, number>>>(STORAGE_KEYS.POLL_LOCAL_VOTES, {});
+    return all[pollId] ?? {};
+}
+
+/** Save user-added comments for a poll (merged on top of the mock list). */
+export function savePollComments<T>(pollId: string, comments: T[]): void {
+    const all = storage.getJSON<Record<string, T[]>>(STORAGE_KEYS.POLL_COMMENTS, {});
+    storage.setJSON(STORAGE_KEYS.POLL_COMMENTS, { ...all, [pollId]: comments });
+}
+
+/** Load previously saved comments for a poll. */
+export function getPollComments<T>(pollId: string): T[] {
+    const all = storage.getJSON<Record<string, T[]>>(STORAGE_KEYS.POLL_COMMENTS, {});
+    return all[pollId] ?? [];
+}
+
+/** Save the set of liked comment IDs for a poll. */
+export function savePollLiked(pollId: string, likedIds: string[]): void {
+    const all = storage.getJSON<Record<string, string[]>>(STORAGE_KEYS.POLL_LIKED, {});
+    storage.setJSON(STORAGE_KEYS.POLL_LIKED, { ...all, [pollId]: likedIds });
+}
+
+/** Load the set of liked comment IDs for a poll. */
+export function getPollLiked(pollId: string): Set<string> {
+    const all = storage.getJSON<Record<string, string[]>>(STORAGE_KEYS.POLL_LIKED, {});
+    return new Set(all[pollId] ?? []);
+}

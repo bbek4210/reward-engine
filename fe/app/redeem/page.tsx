@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePhantomWallet } from "@/hooks/usePhantomWallet";
 import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/contexts/ToastContext";
 import Header from "@/components/layout/Header";
 import { TrendingUp, Bitcoin, PiggyBank, Wallet } from "lucide-react";
-import { walletApi, userApi } from "@/lib/api";
+import { walletApi } from "@/lib/api";
 import { storage, STORAGE_KEYS } from "@/lib/storage";
 
 interface RedemptionOption {
@@ -22,66 +23,54 @@ interface RedemptionHistory {
   status: "Completed" | "Processing" | "Failed";
 }
 
-interface UserProfile {
-  walletAddress: string;
-  points: number;
-  streak: number;
-  weeklyRank: number;
-  missionsCompleted: number;
-  isVerified: boolean;
-  joinedAt: string;
-}
-
 /**
  * Rewards/Redeem Page
  * Allows users to convert points to SOL and view redemption history
  */
 export default function RedeemPage() {
   const wallet = usePhantomWallet();
-  const { points } = useUser();
-  const [currentBalance, setCurrentBalance] = useState(0);
-  const [weeklyGain, setWeeklyGain] = useState(0);
+  const { points, addPoints } = useUser();
+  const toast = useToast();
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [redemptionHistory, setRedemptionHistory] = useState<
     RedemptionHistory[]
   >([]);
 
-  // Sync balance with user context
-  useEffect(() => {
-    setCurrentBalance(points);
-  }, [points]);
-
-  // Track weekly points gain
-  useEffect(() => {
-    // Store points at start of week
+  // Derive weekly gain from localStorage
+  const weeklyGain = (() => {
+    if (typeof window === "undefined") return 0;
     const weekStart = storage.get(STORAGE_KEYS.WEEK_START_POINTS);
     if (!weekStart) {
-      storage.set(STORAGE_KEYS.WEEK_START_POINTS, "0");
-      setWeeklyGain(0);
-    } else {
-      const gain = Math.max(0, points - parseInt(weekStart));
-      setWeeklyGain(gain);
+      storage.set(STORAGE_KEYS.WEEK_START_POINTS, String(points));
+      return 0;
     }
-  }, [points]);
+    return Math.max(0, points - parseInt(weekStart));
+  })();
 
   const redemptionOptions: RedemptionOption[] = [
+    {
+      id: "0",
+      sol: 0.01,
+      points: 20,
+      icon: <TrendingUp className="w-8 h-8 text-rose-600" />,
+    },
     {
       id: "1",
       sol: 0.05,
       points: 100,
-      icon: <TrendingUp className="w-8 h-8 text-rose-600" />,
+      icon: <Bitcoin className="w-8 h-8 text-rose-600" />,
     },
     {
       id: "2",
       sol: 0.25,
       points: 500,
-      icon: <Bitcoin className="w-8 h-8 text-rose-600" />,
+      icon: <PiggyBank className="w-8 h-8 text-rose-600" />,
     },
     {
       id: "3",
       sol: 0.5,
       points: 1000,
-      icon: <PiggyBank className="w-8 h-8 text-rose-600" />,
+      icon: <Wallet className="w-8 h-8 text-rose-600" />,
     },
     {
       id: "4",
@@ -91,52 +80,52 @@ export default function RedeemPage() {
     },
   ];
 
-  useEffect(() => {
-    // Load user balance from API
-    const loadBalance = async () => {
-      if (!wallet.address) return;
-
-      const result = await userApi.getProfile(wallet.address);
-      if (result.success && result.data) {
-        const userData = result.data as UserProfile;
-        setCurrentBalance(userData.points || 0);
-      }
-    };
-
-    loadBalance();
-  }, [wallet.address]);
-
   const handleConnectWallet = async () => {
     if (!wallet.isPhantomInstalled) {
-      alert("Phantom wallet not found. Please install it from phantom.app");
+      toast(
+        "Phantom wallet not found. Please install it from phantom.app",
+        "error",
+      );
       return;
     }
     await wallet.connect();
   };
 
+  const handleDisconnectWallet = async () => {
+    await wallet.disconnect();
+  };
+
   const handleVerifyCitizen = () => {
-    alert("Citizen verification flow would start here");
+    toast("Citizen verification coming soon", "info");
   };
 
   const handleRedeem = async (option: RedemptionOption) => {
     if (!wallet.connected || !wallet.address) {
-      alert("Please connect your wallet first");
+      toast("Please connect your wallet first", "warning");
       return;
     }
 
-    if (currentBalance < option.points) {
-      alert("Insufficient points for this redemption");
+    if (points < option.points) {
+      toast("Insufficient points for this redemption", "warning");
       return;
     }
 
     setIsRedeeming(true);
 
     try {
-      const result = await walletApi.redeem(wallet.address, option.points);
+      const result = (await walletApi.redeem(
+        wallet.address,
+        option.points,
+        option.sol,
+      )) as {
+        success: boolean;
+        error?: string;
+        data?: { signature: string; txUrl: string; solAmount: number };
+      };
 
-      if (result.success) {
-        // Update balance
-        setCurrentBalance((prev) => prev - option.points);
+      if (result.success && result.data) {
+        // Deduct points from user context immediately
+        addPoints(-option.points);
 
         // Add to history
         const newRedemption: RedemptionHistory = {
@@ -147,19 +136,23 @@ export default function RedeemPage() {
           }),
           points: option.points,
           sol: option.sol,
-          status: "Processing",
+          status: "Completed",
         };
         setRedemptionHistory([newRedemption, ...redemptionHistory]);
 
-        alert(
-          `Successfully redeemed ${option.points} points for ${option.sol} SOL!`,
+        toast(
+          `✅ ${option.sol} SOL sent to your wallet! Tx: ${result.data.signature.slice(0, 8)}...`,
+          "success",
         );
+
+        // Open transaction in explorer
+        window.open(result.data.txUrl, "_blank");
       } else {
-        alert(`Redemption failed: ${result.error}`);
+        toast(`Redemption failed: ${result.error}`, "error");
       }
     } catch (error) {
       console.error("Redemption error:", error);
-      alert("An error occurred during redemption");
+      toast("An error occurred during redemption", "error");
     } finally {
       setIsRedeeming(false);
     }
@@ -184,6 +177,7 @@ export default function RedeemPage() {
       <Header
         variant="dashboard"
         onConnectWallet={handleConnectWallet}
+        onDisconnectWallet={handleDisconnectWallet}
         onVerifyCitizen={handleVerifyCitizen}
         walletConnected={wallet.connected}
         walletAddress={wallet.address || undefined}
@@ -204,7 +198,7 @@ export default function RedeemPage() {
                   <span className="text-white text-xl">≡</span>
                 </div>
                 <span className="text-5xl font-bold text-gray-900">
-                  {currentBalance.toLocaleString()}
+                  {points.toLocaleString()}
                 </span>
                 <span className="text-2xl text-gray-500">pts</span>
               </div>
@@ -265,9 +259,9 @@ export default function RedeemPage() {
                 </div>
                 <button
                   onClick={() => handleRedeem(option)}
-                  disabled={isRedeeming || currentBalance < option.points}
+                  disabled={isRedeeming || points < option.points}
                   className={`w-full py-3 rounded-xl font-semibold transition-colors ${
-                    currentBalance < option.points
+                    points < option.points
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-rose-600 text-white hover:bg-rose-700"
                   }`}

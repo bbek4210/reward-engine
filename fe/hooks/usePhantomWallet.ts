@@ -17,7 +17,7 @@ type PhantomProviderEvents = {
 
 interface PhantomProvider {
     isPhantom?: boolean;
-    connect: () => Promise<{ publicKey: PublicKey }>;
+    connect: (opts?: { onlyIfTrusted?: boolean }) => Promise<{ publicKey: PublicKey }>;
     disconnect: () => Promise<void>;
     on<K extends keyof PhantomProviderEvents>(
         event: K,
@@ -125,41 +125,63 @@ export function usePhantomWallet() {
     // Auto-connect on page load if previously connected
     useEffect(() => {
         const provider = getProvider();
+        if (!provider) return;
 
-        if (provider?.publicKey) {
-            const address = provider.publicKey.toString();
-            setWalletState({
-                connected: true,
-                address,
-                balance: 0,
-                provider: 'phantom',
+        // Attempt silent reconnect — only succeeds if user already approved this site.
+        // No popup is shown; rejects silently if not previously approved.
+        provider
+            .connect({ onlyIfTrusted: true })
+            .then((response) => {
+                const address = response.publicKey.toString();
+                setWalletState({
+                    connected: true,
+                    address,
+                    balance: 0,
+                    provider: 'phantom',
+                });
+            })
+            .catch(() => {
+                // Not previously approved — stay disconnected, no error shown
             });
-        }
 
         // Listen for account changes
-        if (provider) {
-            provider.on('accountChanged', (publicKey: PublicKey | null) => {
-                if (publicKey) {
-                    const address = publicKey.toString();
-                    setWalletState(prev => ({
-                        ...prev,
-                        connected: true,
-                        address,
-                    }));
-                } else {
-                    setWalletState({
-                        connected: false,
-                        address: null,
-                        balance: 0,
-                        provider: null,
-                    });
-                }
-            });
+        provider.on('connect', (publicKey: PublicKey) => {
+            setWalletState((prev) => ({
+                ...prev,
+                connected: true,
+                address: publicKey.toString(),
+            }));
+        });
 
-            return () => {
-                provider.removeAllListeners();
-            };
-        }
+        provider.on('accountChanged', (publicKey: PublicKey | null) => {
+            if (publicKey) {
+                setWalletState((prev) => ({
+                    ...prev,
+                    connected: true,
+                    address: publicKey.toString(),
+                }));
+            } else {
+                setWalletState({
+                    connected: false,
+                    address: null,
+                    balance: 0,
+                    provider: null,
+                });
+            }
+        });
+
+        provider.on('disconnect', () => {
+            setWalletState({
+                connected: false,
+                address: null,
+                balance: 0,
+                provider: null,
+            });
+        });
+
+        return () => {
+            provider.removeAllListeners();
+        };
     }, [getProvider]);
 
     return {

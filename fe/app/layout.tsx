@@ -3,7 +3,9 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/contexts/UserContext";
+import { ToastProvider } from "@/contexts/ToastContext";
 import PointsToast from "@/components/ui/PointsToast";
+import ToastContainer from "@/components/ui/ToastContainer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,10 +23,13 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-warmGray-50`}
       >
-        <UserProvider>
-          {children}
-          <PointsToast />
-        </UserProvider>
+        <ToastProvider>
+          <UserProvider>
+            {children}
+            <PointsToast />
+            <ToastContainer />
+          </UserProvider>
+        </ToastProvider>
       </body>
     </html>
   );

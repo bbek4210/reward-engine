@@ -65,7 +65,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const addPoints = (amount: number) => {
     setPoints((prev) => prev + amount);
-    // Show success notification
+
+    // Sync to DB (fire-and-forget — don't block UI)
+    if (wallet.address) {
+      if (amount > 0) {
+        userApi
+          .addPoints(wallet.address, amount)
+          .catch((e) => console.error("addPoints sync failed:", e));
+      } else if (amount < 0) {
+        userApi
+          .deductPoints(wallet.address, Math.abs(amount))
+          .catch((e) => console.error("deductPoints sync failed:", e));
+      }
+    }
+
     if (typeof window !== "undefined") {
       const event = new CustomEvent("points-earned", { detail: { amount } });
       window.dispatchEvent(event);
@@ -75,6 +88,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (wallet.connected && wallet.address) {
       refreshUserData();
+    } else if (!wallet.connected) {
+      // Reset user data when wallet disconnects
+      setPoints(0);
+      setStreak(0);
+      setWeeklyRank(999);
+      setMissionsCompleted(0);
+      setIsVerified(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet.connected, wallet.address]);

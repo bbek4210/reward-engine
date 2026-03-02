@@ -14,10 +14,10 @@ export const mockMissions: Mission[] = [
         totalParticipants: 342,
         isFeatured: true,
         actions: [
-            { id: 'a1', type: 'vote', label: 'Vote on Priority Areas', points: 150, icon: '🗳️' },
-            { id: 'a2', type: 'comment', label: 'Share Your Experience', points: 50, icon: '💬' },
-            { id: 'a3', type: 'proposal', label: 'Submit Improvement Proposal', points: 100, icon: '📝' },
-            { id: 'a4', type: 'upload', label: 'Upload Photo Evidence', points: 75, icon: '📸' },
+            { id: 'a1', type: 'vote', label: 'Vote on Priority Areas', points: 3, icon: '🗳️' },
+            { id: 'a2', type: 'comment', label: 'Share Your Experience', points: 2, icon: '💬' },
+            { id: 'a3', type: 'proposal', label: 'Submit Improvement Proposal', points: 5, icon: '📝' },
+            { id: 'a4', type: 'upload', label: 'Upload Photo Evidence', points: 4, icon: '📸' },
         ],
     },
     {
@@ -33,10 +33,10 @@ export const mockMissions: Mission[] = [
         totalParticipants: 218,
         isFeatured: true,
         actions: [
-            { id: 'b1', type: 'upload', label: 'Report Road Issue', points: 100, icon: '📸' },
-            { id: 'b2', type: 'vote', label: 'Vote on Priority Roads', points: 120, icon: '🗳️' },
-            { id: 'b3', type: 'comment', label: 'Add Comments', points: 40, icon: '💬' },
-            { id: 'b4', type: 'share', label: 'Share with Community', points: 30, icon: '🔗' },
+            { id: 'b1', type: 'upload', label: 'Report Road Issue', points: 4, icon: '📸' },
+            { id: 'b2', type: 'vote', label: 'Vote on Priority Roads', points: 3, icon: '🗳️' },
+            { id: 'b3', type: 'comment', label: 'Add Comments', points: 2, icon: '💬' },
+            { id: 'b4', type: 'share', label: 'Share with Community', points: 0, solReward: 0.01, icon: '🔗' },
         ],
     },
     {
@@ -51,10 +51,10 @@ export const mockMissions: Mission[] = [
         startDate: new Date('2026-02-25'),
         totalParticipants: 156,
         actions: [
-            { id: 'c1', type: 'survey', label: 'Complete Survey', points: 180, icon: '📊' },
-            { id: 'c2', type: 'comment', label: 'Provide Feedback', points: 60, icon: '💬' },
-            { id: 'c3', type: 'proposal', label: 'Suggest Improvements', points: 90, icon: '📝' },
-            { id: 'c4', type: 'share', label: 'Invite Parents', points: 40, icon: '🔗' },
+            { id: 'c1', type: 'survey', label: 'Complete Survey', points: 6, icon: '📊' },
+            { id: 'c2', type: 'comment', label: 'Provide Feedback', points: 2, icon: '💬' },
+            { id: 'c3', type: 'proposal', label: 'Suggest Improvements', points: 5, icon: '📝' },
+            { id: 'c4', type: 'share', label: 'Invite Parents', points: 0, solReward: 0.01, icon: '🔗' },
         ],
     },
     {
@@ -69,10 +69,10 @@ export const mockMissions: Mission[] = [
         startDate: new Date('2026-02-20'),
         totalParticipants: 289,
         actions: [
-            { id: 'd1', type: 'upload', label: 'Report Waste Issue', points: 80, icon: '📸' },
-            { id: 'd2', type: 'vote', label: 'Vote on Solutions', points: 100, icon: '🗳️' },
-            { id: 'd3', type: 'proposal', label: 'Propose New Collection Point', points: 120, icon: '📝' },
-            { id: 'd4', type: 'comment', label: 'Share Ideas', points: 50, icon: '💬' },
+            { id: 'd1', type: 'upload', label: 'Report Waste Issue', points: 4, icon: '📸' },
+            { id: 'd2', type: 'vote', label: 'Vote on Solutions', points: 3, icon: '🗳️' },
+            { id: 'd3', type: 'proposal', label: 'Propose New Collection Point', points: 5, icon: '📝' },
+            { id: 'd4', type: 'comment', label: 'Share Ideas', points: 2, icon: '💬' },
         ],
     },
     {
@@ -87,9 +87,9 @@ export const mockMissions: Mission[] = [
         startDate: new Date('2026-02-15'),
         totalParticipants: 412,
         actions: [
-            { id: 'e1', type: 'vote', label: 'Vote on Budget Priorities', points: 200, icon: '🗳️' },
-            { id: 'e2', type: 'comment', label: 'Add Comments', points: 70, icon: '💬' },
-            { id: 'e3', type: 'proposal', label: 'Suggest Allocation Changes', points: 150, icon: '📝' },
+            { id: 'e1', type: 'vote', label: 'Vote on Budget Priorities', points: 3, icon: '🗳️' },
+            { id: 'e2', type: 'comment', label: 'Add Comments', points: 2, icon: '💬' },
+            { id: 'e3', type: 'proposal', label: 'Suggest Allocation Changes', points: 5, icon: '📝' },
         ],
     },
     {
@@ -104,17 +104,17 @@ export const mockMissions: Mission[] = [
         startDate: new Date('2026-02-10'),
         totalParticipants: 195,
         actions: [
-            { id: 'f1', type: 'vote', label: 'Vote on Park Features', points: 130, icon: '🗳️' },
-            { id: 'f2', type: 'proposal', label: 'Submit Design Ideas', points: 110, icon: '📝' },
-            { id: 'f3', type: 'comment', label: 'Discuss with Community', points: 55, icon: '💬' },
-            { id: 'f4', type: 'share', label: 'Share Survey', points: 35, icon: '🔗' },
+            { id: 'f1', type: 'vote', label: 'Vote on Park Features', points: 3, icon: '🗳️' },
+            { id: 'f2', type: 'proposal', label: 'Submit Design Ideas', points: 5, icon: '📝' },
+            { id: 'f3', type: 'comment', label: 'Discuss with Community', points: 2, icon: '💬' },
+            { id: 'f4', type: 'share', label: 'Share Survey', points: 0, solReward: 0.01, icon: '🔗' },
         ],
     },
 ];
 
 export const mockStats = {
-    yourPoints: 2450,
-    currentStreak: 12,
-    weeklyRank: 12,
-    missionsCompleted: 24,
+    yourPoints: 18,
+    currentStreak: 3,
+    weeklyRank: 89,
+    missionsCompleted: 2,
 };

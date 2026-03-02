@@ -73,6 +73,10 @@ export const userApi = {
         return apiFetch(`/users/${walletAddress}`);
     },
 
+    getStats: async (walletAddress: string) => {
+        return apiFetch(`/users/${walletAddress}/stats`);
+    },
+
     verify: async (walletAddress: string, citizenId: string) => {
         return apiFetch("/users/verify", {
             method: "POST",
@@ -84,6 +88,27 @@ export const userApi = {
         return apiFetch(`/users/${walletAddress}`, {
             method: "PUT",
             body: JSON.stringify(data),
+        });
+    },
+
+    addPoints: async (walletAddress: string, amount: number) => {
+        return apiFetch(`/users/${walletAddress}/add-points`, {
+            method: "POST",
+            body: JSON.stringify({ amount }),
+        });
+    },
+
+    deductPoints: async (walletAddress: string, amount: number) => {
+        return apiFetch(`/users/${walletAddress}/deduct-points`, {
+            method: "POST",
+            body: JSON.stringify({ amount }),
+        });
+    },
+
+    incrementMissionProgress: async (walletAddress: string, missionId: string) => {
+        return apiFetch(`/users/${walletAddress}/mission-progress`, {
+            method: "POST",
+            body: JSON.stringify({ missionId }),
         });
     },
 };
@@ -101,10 +126,10 @@ export const walletApi = {
         return apiFetch(`/wallet/balance/${walletAddress}`);
     },
 
-    redeem: async (walletAddress: string, points: number) => {
+    redeem: async (walletAddress: string, points: number, sol: number) => {
         return apiFetch("/wallet/redeem", {
             method: "POST",
-            body: JSON.stringify({ walletAddress, points }),
+            body: JSON.stringify({ walletAddress, points, sol }),
         });
     },
 };
@@ -129,11 +154,41 @@ export const leaderboardApi = {
     },
 };
 
+// Poll APIs
+export const pollApi = {
+    getState: async (pollId: string, wallet?: string) => {
+        const q = wallet ? `?wallet=${wallet}` : "";
+        return apiFetch(`/polls/${pollId}/state${q}`);
+    },
+
+    vote: async (pollId: string, walletAddress: string, optionId: string, points: number) => {
+        return apiFetch(`/polls/${pollId}/vote`, {
+            method: "POST",
+            body: JSON.stringify({ walletAddress, optionId, points }),
+        });
+    },
+
+    addComment: async (pollId: string, walletAddress: string, author: string, text: string, points: number) => {
+        return apiFetch(`/polls/${pollId}/comments`, {
+            method: "POST",
+            body: JSON.stringify({ walletAddress, author, text, points }),
+        });
+    },
+
+    toggleLike: async (pollId: string, commentId: string, walletAddress: string) => {
+        return apiFetch(`/polls/${pollId}/comments/${commentId}/like`, {
+            method: "POST",
+            body: JSON.stringify({ walletAddress }),
+        });
+    },
+};
+
 const apiExports = {
     missionApi,
     userApi,
     walletApi,
     leaderboardApi,
+    pollApi,
 };
 
 export default apiExports;

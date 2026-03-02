@@ -16,6 +16,7 @@ interface MissionAction {
   type: "vote" | "comment" | "proposal" | "upload";
   label: string;
   points: number;
+  solReward?: number;
   icon: string;
   completed?: boolean;
 }
@@ -135,15 +136,19 @@ export default function MissionModal({
                       <p className="text-sm text-gray-600">
                         {isCompleted
                           ? "Completed!"
-                          : `Earn ${action.points} points`}
+                          : action.solReward
+                            ? `Earn ${action.solReward} SOL directly`
+                            : `Earn ${action.points} pts`}
                       </p>
                     </div>
 
                     <div className="text-right">
                       {isCompleted ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
-                          <CheckCircle className="w-4 h-4" />+{action.points}{" "}
-                          pts
+                          <CheckCircle className="w-4 h-4" />
+                          {action.solReward
+                            ? `+${action.solReward} SOL`
+                            : `+${action.points} pts`}
                         </span>
                       ) : (
                         <Button

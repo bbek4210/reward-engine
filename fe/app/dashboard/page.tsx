@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { usePhantomWallet } from "@/hooks/usePhantomWallet";
 import { useUser } from "@/contexts/UserContext";
+import { useToast } from "@/contexts/ToastContext";
 import Header from "@/components/layout/Header";
 import ActiveMissionCard from "@/components/mission/ActiveMissionCard";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import MissionModal from "@/components/mission/MissionModal";
+import { getMissionProgress, incrementMissionProgress } from "@/lib/storage";
 
 type FilterTab = "all" | "easy" | "streak" | "high-impact" | "referral";
 
@@ -22,6 +25,7 @@ interface ActiveMission {
   };
   points: number;
   recurring: "daily" | "weekly" | "monthly";
+  route?: string;
 }
 
 /**
@@ -30,6 +34,8 @@ interface ActiveMission {
 export default function Dashboard() {
   const wallet = usePhantomWallet();
   const { addPoints } = useUser();
+  const router = useRouter();
+  const toast = useToast();
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [selectedConstituency, setSelectedConstituency] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -46,7 +52,6 @@ export default function Dashboard() {
     }>
   >([]);
 
-  // Active missions - Start fresh with 0 progress
   const mockActiveMissions: ActiveMission[] = [
     {
       id: "1",
@@ -54,8 +59,9 @@ export default function Dashboard() {
       difficulty: "MEDIUM",
       resetTime: "in 3 days",
       progress: { current: 0, total: 5, percentage: 0 },
-      points: 15,
+      points: 8,
       recurring: "weekly",
+      route: "/polls",
     },
     {
       id: "2",
@@ -63,8 +69,9 @@ export default function Dashboard() {
       difficulty: "HIGH IMPACT",
       resetTime: "Monthly",
       progress: { current: 0, total: 10, percentage: 0 },
-      points: 50,
+      points: 20,
       recurring: "monthly",
+      route: "/referral",
     },
     {
       id: "3",
@@ -72,8 +79,9 @@ export default function Dashboard() {
       difficulty: "EASY",
       resetTime: "daily",
       progress: { current: 0, total: 1, percentage: 0 },
-      points: 5,
+      points: 2,
       recurring: "daily",
+      route: "/polls",
     },
     {
       id: "4",
@@ -81,8 +89,9 @@ export default function Dashboard() {
       difficulty: "MEDIUM",
       resetTime: "in 15 days",
       progress: { current: 0, total: 3, percentage: 0 },
-      points: 25,
+      points: 10,
       recurring: "monthly",
+      route: "/polls",
     },
   ];
 
@@ -90,12 +99,23 @@ export default function Dashboard() {
     // Simulate loading missions from API
     const loadMissions = async () => {
       setLoading(true);
-      // In production, fetch from API
-      // const result = await missionApi.getAll({ status: 'active' });
       setTimeout(() => {
-        setActiveMissions(mockActiveMissions);
+        // Load saved progress from localStorage and overlay onto missions
+        const savedProgress = getMissionProgress();
+        const withProgress = mockActiveMissions.map((m) => {
+          const current = Math.min(savedProgress[m.id] ?? 0, m.progress.total);
+          return {
+            ...m,
+            progress: {
+              ...m.progress,
+              current,
+              percentage: Math.round((current / m.progress.total) * 100),
+            },
+          };
+        });
+        setActiveMissions(withProgress);
         setLoading(false);
-      }, 500);
+      }, 300);
     };
 
     loadMissions();
@@ -104,19 +124,31 @@ export default function Dashboard() {
 
   const handleConnectWallet = async () => {
     if (!wallet.isPhantomInstalled) {
-      alert("Phantom wallet not found. Please install it from phantom.app");
+      toast(
+        "Phantom wallet not found. Please install it from phantom.app",
+        "error",
+      );
       return;
     }
     await wallet.connect();
   };
 
+  const handleDisconnectWallet = async () => {
+    await wallet.disconnect();
+  };
+
   const handleVerifyCitizen = () => {
-    alert("Citizen verification flow would start here");
+    toast("Citizen verification coming soon", "info");
   };
 
   const handleCompleteMission = (missionId: string) => {
     if (!wallet.connected) {
-      alert("Please connect your wallet first");
+      toast("Please connect your wallet first", "warning");
+      return;
+    }
+    const mission = activeMissions.find((m) => m.id === missionId);
+    if (mission?.route) {
+      router.push(mission.route);
       return;
     }
     setSelectedMission(missionId);
@@ -128,6 +160,9 @@ export default function Dashboard() {
 
     // Award points
     addPoints(points);
+
+    // Persist progress
+    if (selectedMission) incrementMissionProgress(selectedMission);
 
     // Add to recent activity
     const newActivity = {
@@ -213,6 +248,7 @@ export default function Dashboard() {
       <Header
         variant="dashboard"
         onConnectWallet={handleConnectWallet}
+        onDisconnectWallet={handleDisconnectWallet}
         onVerifyCitizen={handleVerifyCitizen}
         walletConnected={wallet.connected}
         walletAddress={wallet.address || undefined}

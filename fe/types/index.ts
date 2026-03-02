@@ -21,6 +21,7 @@ export interface MissionAction {
     type: 'vote' | 'comment' | 'proposal' | 'upload' | 'share' | 'survey';
     label: string;
     points: number;
+    solReward?: number;   // direct SOL reward (e.g. 0.01 SOL for share actions)
     icon: string;
     completed?: boolean;
 }
@@ -97,6 +98,75 @@ export interface ConstituencySpotlight {
 
 export type TimeFilter = 'weekly' | 'monthly' | 'all-time';
 export type TabType = 'trending' | 'new' | 'constituencies' | 'categories' | 'all';
+
+// Poll types
+export type PollCategory = 'political' | 'education' | 'health' | 'environment' | 'governance' | 'social' | 'infrastructure' | 'other';
+export type PollStatus = 'active' | 'closed' | 'upcoming';
+export type PollType = 'candidate' | 'referendum' | 'survey' | 'opinion';
+
+export interface PollOption {
+    id: string;
+    label: string;
+    votes: number;
+    percentage: number;
+    color?: string;
+}
+
+export interface PollComment {
+    id: string;
+    author: string;
+    avatar?: string;
+    walletAddress: string;
+    text: string;
+    likes: number;
+    createdAt: string;
+    isLiked?: boolean;
+}
+
+export interface PollTrendPoint {
+    date: string;
+    [optionId: string]: number | string;
+}
+
+export interface Poll {
+    id: string;
+    pid: number;
+    title: string;
+    question: string;
+    description?: string;
+    category: PollCategory;
+    type: PollType;
+    status: PollStatus;
+    constituency: string;
+    country: string;
+    bannerImage?: string;
+    bannerLabel?: string;
+    creator: string;
+    createdAt: string;
+    endsAt: string;
+    daysLeft: number;
+    totalVotes: number;
+    options: PollOption[];
+    comments: PollComment[];
+    trendData: PollTrendPoint[];
+    rules: string[];
+    pointsForVoting: number;
+    pointsForComment: number;
+    pointsForShare: number;
+    solRewardForShare?: number;  // direct SOL reward for sharing (e.g. 0.01)
+}
+
+// Referral types
+export interface Referral {
+    id: string;
+    referrerAddress: string;
+    refereeAddress?: string;
+    referralCode: string;
+    status: 'pending' | 'completed';
+    pointsEarned: number;
+    createdAt: string;
+    completedAt?: string;
+}
 
 // Wallet types
 export interface WalletState {

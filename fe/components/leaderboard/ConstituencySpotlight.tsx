@@ -8,26 +8,6 @@ export interface ConstituencySpotlightProps {
   onViewMissions?: (constituency: string) => void;
 }
 
-/**
- * ConstituencySpotlight Component
- *
- * Design Specs:
- * - Large hero card with red gradient background
- * - Label pill: "CONSTITUENCY SPOTLIGHT" (white/light)
- * - Huge constituency name text (KATHMANDU-3)
- * - Stats row: points + top contributor
- * - CTA button on right
- *
- * Layout:
- * +-----------------------------------------------------+
- * | [CONSTITUENCY SPOTLIGHT]                            |
- * | KATHMANDU-3                                         |
- * | 5,842 points this week • Top: @Aayush   [View →]   |
- * +-----------------------------------------------------+
- *
- * Tailwind Classes:
- * bg-gradient-to-br from-[#E11D48] to-[#BE123C] text-white rounded-2xl p-8
- */
 export default function ConstituencySpotlight({
   data,
   onViewMissions,
