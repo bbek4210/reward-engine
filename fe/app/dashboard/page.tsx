@@ -199,6 +199,19 @@ export default function Dashboard() {
     { id: "referral" as FilterTab, label: "Referral" },
   ];
 
+  // Filter missions based on active tab
+  const filteredMissions = activeMissions.filter((mission) => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "easy") return mission.difficulty === "EASY";
+    if (activeFilter === "high-impact")
+      return mission.difficulty === "HIGH IMPACT";
+    if (activeFilter === "streak")
+      return mission.recurring === "daily" || mission.recurring === "weekly";
+    if (activeFilter === "referral")
+      return mission.actions?.some((a) => a.type === "referral") ?? false;
+    return true;
+  });
+
   // Mission actions for the modal come from the selected mission's own action list
   const selectedMissionData = activeMissions.find(
     (m) => m.id === selectedMission,
@@ -279,9 +292,13 @@ export default function Dashboard() {
                 <div className="inline-block w-8 h-8 border-4 border-rose-600 border-t-transparent rounded-full animate-spin" />
                 <p className="mt-4 text-gray-600">Loading missions...</p>
               </div>
+            ) : filteredMissions.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                No missions found for this filter.
+              </div>
             ) : (
               <div className="space-y-4">
-                {activeMissions.map((mission) => (
+                {filteredMissions.map((mission) => (
                   <ActiveMissionCard
                     key={mission.id}
                     title={mission.title}
