@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePhantomWallet } from "@/hooks/usePhantomWallet";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/contexts/ToastContext";
+import { userApi } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import {
   Copy,
@@ -17,6 +18,15 @@ import {
   ArrowRight,
   Star,
 } from "lucide-react";
+
+interface Referral {
+  _id?: string;
+  refereeAddress: string | null;
+  status: "pending" | "completed";
+  pointsEarned: number;
+  createdAt?: string;
+  completedAt?: string | null;
+}
 
 const HOW_IT_WORKS = [
   {
@@ -82,28 +92,29 @@ const TIERS = [
   },
 ];
 
-const MOCK_REFERRALS = [
-  {
-    address: "abc...1234",
-    status: "completed",
-    earned: 5,
-    date: "Feb 28, 2026",
-  },
-  {
-    address: "def...5678",
-    status: "completed",
-    earned: 5,
-    date: "Mar 1, 2026",
-  },
-  { address: "ghi...9012", status: "pending", earned: 0, date: "Mar 2, 2026" },
-];
-
 export default function ReferralPage() {
   const wallet = usePhantomWallet();
-  const { points } = useUser();
+  useUser();
   const toast = useToast();
   const [copied, setCopied] = useState(false);
-  const [twitterCopied, setTwitterCopied] = useState(false);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [referralsLoading, setReferralsLoading] = useState(false);
+
+  // Fetch referrals when wallet connects
+  useEffect(() => {
+    if (!wallet.connected || !wallet.address) {
+      setReferrals([]);
+      return;
+    }
+    setReferralsLoading(true);
+    userApi
+      .getReferrals(wallet.address)
+      .then((res) => {
+        if (res.success && res.data) setReferrals(res.data as Referral[]);
+      })
+      .catch(() => {})
+      .finally(() => setReferralsLoading(false));
+  }, [wallet.connected, wallet.address]);
 
   const handleConnectWallet = async () => {
     if (!wallet.isPhantomInstalled) {
@@ -129,12 +140,12 @@ export default function ReferralPage() {
       ? `${window.location.origin}?ref=${referralCode}`
       : `https://janamat.app?ref=${referralCode}`;
 
-  const completedReferrals = MOCK_REFERRALS.filter(
+  const completedReferrals = referrals.filter(
     (r) => r.status === "completed",
   ).length;
-  const totalEarned = MOCK_REFERRALS.filter(
-    (r) => r.status === "completed",
-  ).reduce((s, r) => s + r.earned, 0);
+  const totalEarned = referrals
+    .filter((r) => r.status === "completed")
+    .reduce((s, r) => s + r.pointsEarned, 0);
 
   const currentTier = TIERS.filter((t) => completedReferrals >= t.count).pop();
   const nextTier = TIERS.find((t) => completedReferrals < t.count);
@@ -229,7 +240,7 @@ export default function ReferralPage() {
             {[
               {
                 label: "Total Referrals",
-                value: MOCK_REFERRALS.length.toString(),
+                value: referralsLoading ? "…" : referrals.length.toString(),
                 icon: Users,
                 color: "text-blue-600",
               },
@@ -351,26 +362,34 @@ export default function ReferralPage() {
                 <h2 className="text-xl font-bold text-[#0F172A] mb-4">
                   Referral History
                 </h2>
-                {MOCK_REFERRALS.length === 0 ? (
+                {referrals.length === 0 ? (
                   <p className="text-gray-400 text-sm text-center py-6">
                     No referrals yet. Share your link to start earning!
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {MOCK_REFERRALS.map((ref, i) => (
+                    {referrals.map((ref, i) => (
                       <div
                         key={i}
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
-                            {ref.address.slice(0, 2).toUpperCase()}
+                            {ref.refereeAddress
+                              ? ref.refereeAddress.slice(0, 2).toUpperCase()
+                              : "?"}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900">
-                              {ref.address}
+                              {ref.refereeAddress
+                                ? `${ref.refereeAddress.slice(0, 6)}…${ref.refereeAddress.slice(-4)}`
+                                : "Pending"}
                             </p>
-                            <p className="text-xs text-gray-400">{ref.date}</p>
+                            <p className="text-xs text-gray-400">
+                              {ref.createdAt
+                                ? new Date(ref.createdAt).toLocaleDateString()
+                                : "—"}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -385,9 +404,9 @@ export default function ReferralPage() {
                               ? "Completed"
                               : "Pending"}
                           </span>
-                          {ref.earned > 0 && (
+                          {ref.pointsEarned > 0 && (
                             <span className="text-sm font-bold text-rose-600">
-                              +{ref.earned} pts
+                              +{ref.pointsEarned} pts
                             </span>
                           )}
                         </div>

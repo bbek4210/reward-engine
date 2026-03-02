@@ -50,13 +50,22 @@ export const missionApi = {
         if (filters?.status) params.append("status", filters.status);
         if (filters?.constituency) params.append("constituency", filters.constituency);
         if (filters?.category) params.append("category", filters.category);
-
         const query = params.toString();
         return apiFetch(`/missions${query ? `?${query}` : ""}`);
     },
 
     getById: async (id: string) => {
         return apiFetch(`/missions/${id}`);
+    },
+
+    // Recurring gamification tasks shown on the dashboard
+    getTasks: async () => {
+        return apiFetch("/missions/tasks");
+    },
+
+    // Filter option metadata (constituencies, categories)
+    getMeta: async () => {
+        return apiFetch("/missions/meta");
     },
 
     completeAction: async (missionId: string, actionId: string, walletAddress: string) => {
@@ -111,6 +120,17 @@ export const userApi = {
             body: JSON.stringify({ missionId }),
         });
     },
+
+    getReferrals: async (walletAddress: string) => {
+        return apiFetch(`/users/${walletAddress}/referrals`);
+    },
+
+    createReferral: async (referralCode: string, refereeAddress: string) => {
+        return apiFetch("/users/referral", {
+            method: "POST",
+            body: JSON.stringify({ referralCode, refereeAddress }),
+        });
+    },
 };
 
 // Wallet APIs
@@ -156,6 +176,22 @@ export const leaderboardApi = {
 
 // Poll APIs
 export const pollApi = {
+    // List polls with optional filters
+    getList: async (filters?: { category?: string; status?: string; constituency?: string; sort?: string }) => {
+        const params = new URLSearchParams();
+        if (filters?.category && filters.category !== "all") params.append("category", filters.category);
+        if (filters?.status && filters.status !== "all") params.append("status", filters.status);
+        if (filters?.constituency) params.append("constituency", filters.constituency);
+        if (filters?.sort) params.append("sort", filters.sort);
+        const query = params.toString();
+        return apiFetch(`/polls${query ? `?${query}` : ""}`);
+    },
+
+    // Get single poll full data (question, options, rules, etc.)
+    getById: async (pollId: string) => {
+        return apiFetch(`/polls/${pollId}`);
+    },
+
     getState: async (pollId: string, wallet?: string) => {
         const q = wallet ? `?wallet=${wallet}` : "";
         return apiFetch(`/polls/${pollId}/state${q}`);

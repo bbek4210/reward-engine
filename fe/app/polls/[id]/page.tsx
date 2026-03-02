@@ -29,8 +29,8 @@ import {
 import { usePhantomWallet } from "@/hooks/usePhantomWallet";
 import { useUser } from "@/contexts/UserContext";
 import Header from "@/components/layout/Header";
-import { mockPolls } from "@/lib/pollData";
 import { pollApi } from "@/lib/api";
+import type { Poll } from "@/types";
 import {
   incrementMissionProgress,
   savePollVote,
@@ -53,19 +53,18 @@ export default function PollDetailPage() {
   const { addPoints } = useUser();
   const toast = useToast();
 
-  const poll = mockPolls.find((p) => p.id === id);
+  // Poll data fetched from backend
+  const [poll, setPoll] = useState<Poll | null>(null);
+  const [pollLoading, setPollLoading] = useState(true);
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("All");
-  // Seed from localStorage so UI is immediate while backend loads
   const [voted, setVoted] = useState<string | null>(() => getPollVote(id));
   const [isVoting, setIsVoting] = useState(false);
   const [showRules, setShowRules] = useState(false);
-  const [comments, setComments] = useState<PollComment[]>(() => {
-    const saved = getPollComments<PollComment>(id);
-    const mockIds = new Set((poll?.comments || []).map((c) => c.id));
-    const userComments = saved.filter((c) => !mockIds.has(c.id));
-    return [...userComments, ...(poll?.comments || [])];
-  });
+  // Seed comments from localStorage for instant display before API responds
+  const [comments, setComments] = useState<PollComment[]>(() =>
+    getPollComments<PollComment>(id),
+  );
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [likedComments, setLikedComments] = useState<Set<string>>(() =>
@@ -77,49 +76,60 @@ export default function PollDetailPage() {
   const [copied, setCopied] = useState(false);
   const commentIdRef = useRef(0);
 
-  // Load authoritative state from backend and override local state
+  // Fetch poll data + backend vote state in parallel
   useEffect(() => {
     if (!id) return;
-    pollApi
-      .getState(id, wallet.address || undefined)
-      .then((res) => {
-        if (!res.success || !res.data) return;
-        const data = res.data as {
-          voteMap: Record<string, number>;
-          userVote: string | null;
-          comments: PollComment[];
-        };
-
-        // Override vote
-        if (data.userVote) {
-          setVoted(data.userVote);
-          savePollVote(id, data.userVote);
+    setPollLoading(true);
+    Promise.all([
+      pollApi.getById(id),
+      pollApi.getState(id, wallet.address || undefined),
+    ])
+      .then(([pollRes, stateRes]) => {
+        // 1. Set poll definition
+        if (pollRes.success && pollRes.data) {
+          const pollData = pollRes.data as Poll;
+          setPoll(pollData);
+          // Seed comments from poll's built-in comments if no localStorage data
+          setComments((prev) => {
+            if (prev.length > 0) return prev;
+            return pollData.comments || [];
+          });
         }
 
-        // Build localVotes delta from DB vote counts vs mock poll counts
-        if (data.voteMap && poll) {
-          const delta: Record<string, number> = {};
-          for (const opt of poll.options) {
-            const dbCount = data.voteMap[opt.id] || 0;
-            if (dbCount > 0) delta[opt.id] = dbCount;
+        // 2. Override with authoritative backend state
+        if (stateRes.success && stateRes.data) {
+          const data = stateRes.data as {
+            voteMap: Record<string, number>;
+            userVote: string | null;
+            comments: PollComment[];
+          };
+
+          if (data.userVote) {
+            setVoted(data.userVote);
+            savePollVote(id, data.userVote);
           }
-          setLocalVotes(delta);
-          savePollLocalVotes(id, delta);
-        }
 
-        // Merge DB comments with mock comments (DB takes precedence at top)
-        if (data.comments?.length) {
-          const mockIds = new Set((poll?.comments || []).map((c) => c.id));
-          setComments([
-            ...data.comments,
-            ...(poll?.comments || []).filter((c) => !mockIds.has(c.id)),
-          ]);
-          savePollComments(id, data.comments);
+          if (data.voteMap && pollRes.data) {
+            const p = pollRes.data as Poll;
+            const delta: Record<string, number> = {};
+            for (const opt of p.options) {
+              const dbCount = data.voteMap[opt.id] || 0;
+              if (dbCount > 0) delta[opt.id] = dbCount;
+            }
+            setLocalVotes(delta);
+            savePollLocalVotes(id, delta);
+          }
+
+          if (data.comments?.length) {
+            setComments(data.comments);
+            savePollComments(id, data.comments);
+          }
         }
       })
       .catch(() => {
-        // Backend unavailable — localStorage data already loaded, no action needed
-      });
+        // Backend unavailable — localStorage data already loaded
+      })
+      .finally(() => setPollLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, wallet.address]);
 
@@ -137,6 +147,17 @@ export default function PollDetailPage() {
   const handleDisconnectWallet = async () => {
     await wallet.disconnect();
   };
+
+  if (pollLoading) {
+    return (
+      <div className="min-h-screen bg-[#F7F4F2] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-4 border-rose-600 border-t-transparent rounded-full animate-spin" />
+          <p className="mt-4 text-gray-600">Loading poll…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!poll) {
     return (

@@ -18,7 +18,7 @@ export interface Mission {
 
 export interface MissionAction {
     id: string;
-    type: 'vote' | 'comment' | 'proposal' | 'upload' | 'share' | 'survey';
+    type: 'vote' | 'comment' | 'proposal' | 'upload' | 'share' | 'survey' | 'referral';
     label: string;
     points: number;
     solReward?: number;   // direct SOL reward (e.g. 0.01 SOL for share actions)

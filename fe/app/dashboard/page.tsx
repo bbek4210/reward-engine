@@ -10,6 +10,7 @@ import ActiveMissionCard from "@/components/mission/ActiveMissionCard";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import MissionModal from "@/components/mission/MissionModal";
 import { getMissionProgress, incrementMissionProgress } from "@/lib/storage";
+import { missionApi } from "@/lib/api";
 
 type FilterTab = "all" | "easy" | "streak" | "high-impact" | "referral";
 
@@ -26,6 +27,20 @@ interface ActiveMission {
   points: number;
   recurring: "daily" | "weekly" | "monthly";
   route?: string;
+  actions?: Array<{
+    id: string;
+    type:
+      | "vote"
+      | "comment"
+      | "proposal"
+      | "upload"
+      | "survey"
+      | "share"
+      | "referral";
+    label: string;
+    points: number;
+    icon: string;
+  }>;
 }
 
 /**
@@ -41,6 +56,8 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [activeMissions, setActiveMissions] = useState<ActiveMission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [constituencies, setConstituencies] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [selectedMission, setSelectedMission] = useState<string | null>(null);
   const [recentActivities, setRecentActivities] = useState<
     Array<{
@@ -52,74 +69,50 @@ export default function Dashboard() {
     }>
   >([]);
 
-  const mockActiveMissions: ActiveMission[] = [
-    {
-      id: "1",
-      title: "Weekly Voter Participation",
-      difficulty: "MEDIUM",
-      resetTime: "in 3 days",
-      progress: { current: 0, total: 5, percentage: 0 },
-      points: 8,
-      recurring: "weekly",
-      route: "/polls",
-    },
-    {
-      id: "2",
-      title: "Community Referral Milestone",
-      difficulty: "HIGH IMPACT",
-      resetTime: "Monthly",
-      progress: { current: 0, total: 10, percentage: 0 },
-      points: 20,
-      recurring: "monthly",
-      route: "/referral",
-    },
-    {
-      id: "3",
-      title: "Daily Opinion Pulse",
-      difficulty: "EASY",
-      resetTime: "daily",
-      progress: { current: 0, total: 1, percentage: 0 },
-      points: 2,
-      recurring: "daily",
-      route: "/polls",
-    },
-    {
-      id: "4",
-      title: "Monthly Health Survey",
-      difficulty: "MEDIUM",
-      resetTime: "in 15 days",
-      progress: { current: 0, total: 3, percentage: 0 },
-      points: 10,
-      recurring: "monthly",
-      route: "/polls",
-    },
-  ];
-
   useEffect(() => {
-    // Simulate loading missions from API
     const loadMissions = async () => {
       setLoading(true);
-      setTimeout(() => {
-        // Load saved progress from localStorage and overlay onto missions
-        const savedProgress = getMissionProgress();
-        const withProgress = mockActiveMissions.map((m) => {
-          const current = Math.min(savedProgress[m.id] ?? 0, m.progress.total);
-          return {
-            ...m,
-            progress: {
-              ...m.progress,
-              current,
-              percentage: Math.round((current / m.progress.total) * 100),
-            },
-          };
-        });
-        setActiveMissions(withProgress);
-        setLoading(false);
-      }, 300);
-    };
+      try {
+        const [tasksRes, metaRes] = await Promise.all([
+          missionApi.getTasks(),
+          missionApi.getMeta(),
+        ]);
 
+        if (tasksRes.success && tasksRes.data) {
+          const tasks = tasksRes.data as ActiveMission[];
+          const savedProgress = getMissionProgress();
+          const withProgress = tasks.map((m) => {
+            const current = Math.min(
+              savedProgress[m.id] ?? 0,
+              m.progress.total,
+            );
+            return {
+              ...m,
+              progress: {
+                ...m.progress,
+                current,
+                percentage: Math.round((current / m.progress.total) * 100),
+              },
+            };
+          });
+          setActiveMissions(withProgress);
+        }
+
+        if (metaRes.success && metaRes.data) {
+          const meta = metaRes.data as {
+            constituencies: string[];
+            categories: string[];
+          };
+          setConstituencies(meta.constituencies);
+          setCategories(meta.categories);
+        }
+      } catch {
+        // Ignore — missions will be empty
+      } finally {
+        setLoading(false);
+      }
+    };
     loadMissions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleConnectWallet = async () => {
@@ -206,41 +199,11 @@ export default function Dashboard() {
     { id: "referral" as FilterTab, label: "Referral" },
   ];
 
-  // Mission actions for the modal
-  const missionActions = [
-    {
-      id: "action-1",
-      type: "vote" as const,
-      label: "Vote on Priority Issues",
-      points: 150,
-      icon: "🗳️",
-    },
-    {
-      id: "action-2",
-      type: "comment" as const,
-      label: "Share Your Opinion",
-      points: 50,
-      icon: "💬",
-    },
-    {
-      id: "action-3",
-      type: "proposal" as const,
-      label: "Submit a Proposal",
-      points: 100,
-      icon: "📝",
-    },
-    {
-      id: "action-4",
-      type: "upload" as const,
-      label: "Upload Supporting Evidence",
-      points: 75,
-      icon: "📸",
-    },
-  ];
-
+  // Mission actions for the modal come from the selected mission's own action list
   const selectedMissionData = activeMissions.find(
     (m) => m.id === selectedMission,
   );
+  const missionActions = selectedMissionData?.actions ?? [];
 
   return (
     <div className="min-h-screen bg-[#F7F4F2]">
@@ -284,9 +247,11 @@ export default function Dashboard() {
                 className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
               >
                 <option value="all">All Constituencies</option>
-                <option value="kathmandu-3">Kathmandu-3</option>
-                <option value="lalitpur-2">Lalitpur-2</option>
-                <option value="bhaktapur-1">Bhaktapur-1</option>
+                {constituencies.map((c) => (
+                  <option key={c} value={c.toLowerCase()}>
+                    {c.charAt(0) + c.slice(1).toLowerCase()}
+                  </option>
+                ))}
               </select>
 
               <select
@@ -295,11 +260,11 @@ export default function Dashboard() {
                 className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-rose-500"
               >
                 <option value="all">All Categories</option>
-                <option value="health">Health</option>
-                <option value="education">Education</option>
-                <option value="infrastructure">Infrastructure</option>
-                <option value="environment">Environment</option>
-                <option value="governance">Governance</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
 

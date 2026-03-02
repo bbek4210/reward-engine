@@ -13,7 +13,14 @@ import Button from "../ui/Button";
 
 interface MissionAction {
   id: string;
-  type: "vote" | "comment" | "proposal" | "upload";
+  type:
+    | "vote"
+    | "comment"
+    | "proposal"
+    | "upload"
+    | "share"
+    | "survey"
+    | "referral";
   label: string;
   points: number;
   solReward?: number;

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePhantomWallet } from "@/hooks/usePhantomWallet";
 import { useToast } from "@/contexts/ToastContext";
+import { pollApi } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import PollCard from "@/components/polls/PollCard";
-import { mockPolls } from "@/lib/pollData";
-import { Search, ChevronDown, TrendingUp, Clock, Star } from "lucide-react";
-import type { PollCategory } from "@/types";
+import { Search, TrendingUp, Clock, Star } from "lucide-react";
+import type { Poll, PollCategory } from "@/types";
 
 const CATEGORIES: { id: PollCategory | "all"; label: string }[] = [
   { id: "all", label: "All" },
@@ -30,28 +30,31 @@ const SORTS = [
 export default function PollsPage() {
   const wallet = usePhantomWallet();
   const toast = useToast();
+
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<PollCategory | "all">("all");
   const [sort, setSort] = useState("trending");
   const [status, setStatus] = useState<"all" | "active" | "closed">("all");
 
-  const handleConnectWallet = async () => {
-    if (!wallet.isPhantomInstalled) {
-      toast(
-        "Phantom wallet not found. Please install it from phantom.app",
-        "error",
-      );
-      return;
-    }
-    await wallet.connect();
-  };
-
-  const handleDisconnectWallet = async () => {
-    await wallet.disconnect();
-  };
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    pollApi
+      .getList({ sort })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success && res.data) setPolls(res.data as Poll[]);
+        else toast("Failed to load polls", "error");
+      })
+      .catch(() => { if (!cancelled) toast("Failed to load polls", "error"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
-    let list = [...mockPolls];
+    let list = [...polls];
     if (category !== "all") list = list.filter((p) => p.category === category);
     if (status !== "all") list = list.filter((p) => p.status === status);
     if (search.trim()) {
@@ -63,12 +66,25 @@ export default function PollsPage() {
           p.category.toLowerCase().includes(q),
       );
     }
-    if (sort === "trending") list.sort((a, b) => b.totalVotes - a.totalVotes);
-    else if (sort === "newest") list.sort((a, b) => b.pid - a.pid);
-    else if (sort === "mostVoted")
-      list.sort((a, b) => b.totalVotes - a.totalVotes);
     return list;
-  }, [category, status, search, sort]);
+  }, [polls, category, status, search]);
+
+  const activeCount = polls.filter((p) => p.status === "active").length;
+  const totalVotes = polls.reduce((s, p) => s + p.totalVotes, 0);
+  const pointsAvailable = polls.reduce(
+    (s, p) => s + (p.pointsForVoting || 0) + (p.pointsForComment || 0),
+    0,
+  );
+
+  const handleConnectWallet = async () => {
+    if (!wallet.isPhantomInstalled) {
+      toast("Phantom wallet not found. Please install it from phantom.app", "error");
+      return;
+    }
+    await wallet.connect();
+  };
+
+  const handleDisconnectWallet = async () => { await wallet.disconnect(); };
 
   return (
     <div className="min-h-screen bg-[#F7F4F2]">
@@ -81,7 +97,6 @@ export default function PollsPage() {
       />
 
       <main className="max-w-[1400px] mx-auto px-6 py-8">
-        {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#0F172A]">Community Polls</h1>
           <p className="text-[#64748B] mt-1">
@@ -92,25 +107,12 @@ export default function PollsPage() {
         {/* Stats Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            {
-              label: "Active Polls",
-              value: mockPolls
-                .filter((p) => p.status === "active")
-                .length.toString(),
-            },
-            {
-              label: "Total Votes",
-              value: mockPolls
-                .reduce((s, p) => s + p.totalVotes, 0)
-                .toLocaleString(),
-            },
-            { label: "Points Available", value: "1,400+" },
+            { label: "Active Polls", value: loading ? "…" : activeCount.toString() },
+            { label: "Total Votes", value: loading ? "…" : totalVotes.toLocaleString() },
+            { label: "Points Available", value: loading ? "…" : `${pointsAvailable}+` },
             { label: "Your Votes", value: wallet.connected ? "0" : "—" },
           ].map((stat) => (
-            <div
-              key={stat.label}
-              className="bg-white rounded-xl p-4 border border-gray-100 text-center"
-            >
+            <div key={stat.label} className="bg-white rounded-xl p-4 border border-gray-100 text-center">
               <p className="text-2xl font-bold text-[#E11D48]">{stat.value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
             </div>
@@ -119,7 +121,6 @@ export default function PollsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 mb-6 space-y-4">
-          {/* Search + Sort */}
           <div className="flex gap-3 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -152,7 +153,6 @@ export default function PollsPage() {
             </div>
           </div>
 
-          {/* Category pills + Status */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex flex-wrap gap-2 flex-1">
               {CATEGORIES.map((cat) => (
@@ -171,9 +171,7 @@ export default function PollsPage() {
             </div>
             <select
               value={status}
-              onChange={(e) =>
-                setStatus(e.target.value as "all" | "active" | "closed")
-              }
+              onChange={(e) => setStatus(e.target.value as "all" | "active" | "closed")}
               className="px-3 py-1.5 border border-gray-200 rounded-xl text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-rose-500"
             >
               <option value="all">All Status</option>
@@ -183,20 +181,20 @@ export default function PollsPage() {
           </div>
         </div>
 
-        {/* Results count */}
         <p className="text-sm text-gray-500 mb-4">
-          Showing{" "}
-          <span className="font-semibold text-gray-800">{filtered.length}</span>{" "}
-          polls
+          Showing <span className="font-semibold text-gray-800">{filtered.length}</span> polls
         </p>
 
-        {/* Poll Grid */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 animate-pulse h-64" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-400 text-lg">No polls found</p>
-            <p className="text-gray-400 text-sm mt-1">
-              Try changing your filters
-            </p>
+            <p className="text-gray-400 text-sm mt-1">Try changing your filters</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
