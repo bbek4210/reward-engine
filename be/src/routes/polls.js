@@ -681,6 +681,15 @@ router.post("/:pollId/comments", async (req, res) => {
         .json({ success: false, error: "walletAddress and text required" });
     }
 
+    // Enforce one comment per wallet per poll
+    const existing = await PollComment.findOne({ pollId, walletAddress });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: "You have already commented on this poll",
+      });
+    }
+
     const comment = await PollComment.create({
       pollId,
       walletAddress,
