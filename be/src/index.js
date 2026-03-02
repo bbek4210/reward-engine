@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import missionRoutes from "./routes/missions.js";
 import leaderboardRoutes from "./routes/leaderboard.js";
 import userRoutes from "./routes/users.js";
@@ -65,15 +66,27 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("✅ DB Connected");
+
+    app.listen(PORT, () => {
+      console.log(`
 ╔═══════════════════════════════════════════════════╗
 ║   🏛️  Janamat Rewards API Server                 ║
 ║   Port: ${PORT}                                   ║
 ║   Environment: ${process.env.NODE_ENV || "development"}           ║
 ║   Network: ${process.env.SOLANA_NETWORK || "devnet"}              ║
 ╚═══════════════════════════════════════════════════╝
-  `);
-});
+      `);
+    });
+  } catch (err) {
+    console.error("❌ DB Connection Failed:", err.message);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app;
