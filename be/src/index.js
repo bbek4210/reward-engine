@@ -6,6 +6,7 @@ import missionRoutes from "./routes/missions.js";
 import leaderboardRoutes from "./routes/leaderboard.js";
 import userRoutes from "./routes/users.js";
 import walletRoutes from "./routes/wallet.js";
+import pollRoutes from "./routes/polls.js";
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,7 @@ app.use("/api/missions", missionRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/polls", pollRoutes);
 
 // 404 handler
 app.use((req, res) => {
