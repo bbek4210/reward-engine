@@ -1,4 +1,4 @@
-# �️ Janamat Rewards
+#  Janamat Rewards Engine
 
 > Earn points for meaningful civic participation on the blockchain.
 
