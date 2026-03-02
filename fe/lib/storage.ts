@@ -85,6 +85,7 @@ export const STORAGE_KEYS = {
     POLL_LOCAL_VOTES: 'poll_local_votes', // { [pollId]: { [optionId]: number } }
     POLL_COMMENTS: 'poll_comments',     // { [pollId]: PollComment[] }
     POLL_LIKED: 'poll_liked',           // { [pollId]: string[] }
+    REDEMPTION_HISTORY: 'redemption_history', // RedemptionHistory[]
 } as const;
 
 /** Increment the stored action count for a mission and return the new count. */

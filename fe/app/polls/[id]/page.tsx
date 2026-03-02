@@ -82,7 +82,6 @@ export default function PollDetailPage() {
   // Fetch poll data + backend vote state in parallel
   useEffect(() => {
     if (!id) return;
-    setPollLoading(true);
     Promise.all([
       pollApi.getById(id),
       pollApi.getState(id, wallet.address || undefined),
@@ -133,22 +132,14 @@ export default function PollDetailPage() {
         // Backend unavailable — localStorage data already loaded
       })
       .finally(() => setPollLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, wallet.address]);
 
-  const handleConnectWallet = async () => {
-    if (!wallet.isPhantomInstalled) {
-      toast(
-        "Phantom wallet not found. Please install it from phantom.app",
-        "error",
-      );
-      return;
-    }
-    await wallet.connect();
+  const handleConnectWallet = () => {
+    setVisible(true);
   };
 
   const handleDisconnectWallet = async () => {
-    await wallet.disconnect();
+    await disconnect();
   };
 
   if (pollLoading) {

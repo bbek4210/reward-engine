@@ -37,7 +37,9 @@ export default function RedeemPage() {
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [redemptionHistory, setRedemptionHistory] = useState<
     RedemptionHistory[]
-  >([]);
+  >(() =>
+    storage.getJSON<RedemptionHistory[]>(STORAGE_KEYS.REDEMPTION_HISTORY, []),
+  );
 
   // Derive weekly gain from localStorage
   const weeklyGain = (() => {
@@ -132,15 +134,14 @@ export default function RedeemPage() {
           sol: option.sol,
           status: "Completed",
         };
-        setRedemptionHistory([newRedemption, ...redemptionHistory]);
+        const updatedHistory = [newRedemption, ...redemptionHistory];
+        setRedemptionHistory(updatedHistory);
+        storage.setJSON(STORAGE_KEYS.REDEMPTION_HISTORY, updatedHistory);
 
         toast(
-          `✅ ${option.sol} SOL sent to your wallet! Tx: ${result.data.signature.slice(0, 8)}...`,
+          `Redemption successful! ${option.sol} SOL is on its way — check your wallet.`,
           "success",
         );
-
-        // Open transaction in explorer
-        window.open(result.data.txUrl, "_blank");
       } else {
         toast(`Redemption failed: ${result.error}`, "error");
       }
