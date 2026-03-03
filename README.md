@@ -15,7 +15,7 @@ Janamat Rewards is a **Web3 civic engagement platform** built for Nepal. Citizen
 - � **Redeem** — Convert earned points to real SOL
 - � **Refer & Earn** — Invite others and earn bonus points
 
----
+---Try the app: https://janamatreward.tech/
 
 ## Tech Stack
 
