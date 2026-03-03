@@ -8,6 +8,7 @@ import {
   Transaction,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -164,11 +165,27 @@ router.post("/redeem", async (req, res) => {
 
     const lamports = Math.floor(parseFloat(sol) * LAMPORTS_PER_SOL);
 
+    // ── Deduct points from User BEFORE transferring SOL (atomic guard) ──
+    const user = await User.findOne({ walletAddress });
+    if (!user || user.points < parseInt(points)) {
+      return res.status(400).json({
+        success: false,
+        error: "Insufficient points",
+      });
+    }
+    user.points -= parseInt(points);
+    await user.save();
+
     // Check treasury has enough balance (+ fee buffer)
     const treasuryBalance = await connection.getBalance(
       treasuryKeypair.publicKey,
     );
     if (treasuryBalance < lamports + 10_000) {
+      // Restore points since we can't complete the transfer
+      await User.findOneAndUpdate(
+        { walletAddress },
+        { $inc: { points: parseInt(points) } },
+      );
       return res.status(503).json({
         success: false,
         error: "Treasury has insufficient SOL balance",
@@ -207,6 +224,16 @@ router.post("/redeem", async (req, res) => {
     });
   } catch (error) {
     console.error("Redemption transfer error:", error);
+    // Restore points if the SOL transfer failed
+    const { walletAddress, points } = req.body;
+    if (walletAddress && points) {
+      await User.findOneAndUpdate(
+        { walletAddress },
+        { $inc: { points: parseInt(points) } },
+      ).catch((e) =>
+        console.error("Failed to restore points after redeem error:", e),
+      );
+    }
     res.status(500).json({
       success: false,
       error: "Failed to process SOL transfer: " + error.message,

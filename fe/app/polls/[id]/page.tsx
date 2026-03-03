@@ -201,7 +201,7 @@ export default function PollDetailPage() {
         id,
         wallet.address,
         optionId,
-        poll.pointsForVoting,
+        0, // points awarded via addPoints() below to avoid double-counting
       )) as {
         success: boolean;
         error?: string;
@@ -217,8 +217,8 @@ export default function PollDetailPage() {
         savePollLocalVotes(id, delta);
         addPoints(poll.pointsForVoting);
         // Track progress for "Weekly Voter Participation" (id:1) and "Daily Opinion Pulse" (id:3)
-        incrementMissionProgress("1");
-        incrementMissionProgress("3");
+        incrementMissionProgress("1", wallet.address);
+        incrementMissionProgress("3", wallet.address);
       } else {
         toast(res.error || "Failed to cast vote", "error");
       }
@@ -231,8 +231,8 @@ export default function PollDetailPage() {
       }));
       savePollVote(id, optionId);
       addPoints(poll.pointsForVoting);
-      incrementMissionProgress("1");
-      incrementMissionProgress("3");
+      incrementMissionProgress("1", wallet.address);
+      incrementMissionProgress("3", wallet.address);
     }
     setIsVoting(false);
   };
@@ -260,14 +260,14 @@ export default function PollDetailPage() {
         wallet.address,
         authorLabel,
         newComment.trim(),
-        poll.pointsForComment,
+        0, // points awarded via addPoints() below to avoid double-counting
       )) as { success: boolean; error?: string; data?: PollComment };
       if (res.success && res.data) {
         setComments((prev) => [res.data!, ...prev]);
         setNewComment("");
         addPoints(poll.pointsForComment);
         // Comments also count toward weekly voter participation mission
-        incrementMissionProgress("1");
+        incrementMissionProgress("1", wallet.address);
       } else {
         toast(res.error || "Failed to post comment", "error");
       }
@@ -284,7 +284,7 @@ export default function PollDetailPage() {
       setComments((prev) => [comment, ...prev]);
       setNewComment("");
       addPoints(poll.pointsForComment);
-      incrementMissionProgress("1");
+      incrementMissionProgress("1", wallet.address);
     }
     setIsCommenting(false);
   };

@@ -149,7 +149,8 @@ export default function Dashboard() {
     addPoints(points);
 
     // Persist progress
-    if (selectedMission) incrementMissionProgress(selectedMission);
+    if (selectedMission)
+      incrementMissionProgress(selectedMission, wallet.address);
 
     // Add to recent activity
     const newActivity = {

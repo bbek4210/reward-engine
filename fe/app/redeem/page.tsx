@@ -32,7 +32,7 @@ export default function RedeemPage() {
   const { connected, publicKey, disconnect } = useWallet();
   const { setVisible } = useWalletModal();
   const wallet = { connected, address: publicKey?.toString() ?? null };
-  const { points, addPoints } = useUser();
+  const { points, addPoints, refreshUserData } = useUser();
   const toast = useToast();
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [redemptionHistory, setRedemptionHistory] = useState<
@@ -120,8 +120,8 @@ export default function RedeemPage() {
       };
 
       if (result.success && result.data) {
-        // Deduct points from user context immediately
-        addPoints(-option.points);
+        // Points already deducted by BE — refresh authoritative balance
+        await refreshUserData();
 
         // Add to history
         const newRedemption: RedemptionHistory = {
