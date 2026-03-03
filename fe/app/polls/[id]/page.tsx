@@ -358,12 +358,12 @@ export default function PollDetailPage() {
 
         <div className="flex gap-6 flex-col lg:flex-row">
           {/* LEFT — main content */}
-          <div className="flex-1 space-y-5">
+          <div className="flex-1 space-y-4 sm:space-y-5 min-w-0">
             {/* Poll Header Card */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              <div className="flex gap-4 p-6">
+              <div className="flex gap-3 sm:gap-4 p-4 sm:p-6">
                 {/* Thumbnail */}
-                <div className="w-40 h-28 bg-gradient-to-br from-gray-700 to-gray-500 rounded-xl flex-shrink-0 relative overflow-hidden">
+                <div className="w-20 h-16 sm:w-40 sm:h-28 bg-gradient-to-br from-gray-700 to-gray-500 rounded-xl flex-shrink-0 relative overflow-hidden">
                   <svg
                     viewBox="0 0 160 112"
                     className="absolute inset-0 w-full h-full opacity-20"
@@ -383,8 +383,8 @@ export default function PollDetailPage() {
                 </div>
 
                 {/* Title & Meta */}
-                <div className="flex-1">
-                  <h1 className="text-xl font-bold text-[#0F172A] leading-snug mb-3">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-base sm:text-xl font-bold text-[#0F172A] leading-snug mb-2 sm:mb-3">
                     {poll.question}
                   </h1>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">

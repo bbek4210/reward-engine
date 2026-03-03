@@ -120,11 +120,13 @@ export default function Leaderboard() {
       />
 
       {/* Main Content */}
-      <main className="max-w-[1280px] mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Page Header */}
-        <div className="space-y-3">
-          <h1 className="text-5xl font-bold text-[#0F172A]">Leaderboard</h1>
-          <p className="text-lg text-[#475569] max-w-3xl">
+        <div className="space-y-2 sm:space-y-3">
+          <h1 className="text-3xl sm:text-5xl font-bold text-[#0F172A]">
+            Leaderboard
+          </h1>
+          <p className="text-base sm:text-lg text-[#475569] max-w-3xl">
             See who&apos;s leading the civic engagement movement. Track top
             constituencies and citizens making the biggest impact in their
             communities.
@@ -134,7 +136,7 @@ export default function Leaderboard() {
         {/* Controls Row */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           {/* Time Filter Pills */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {(["weekly", "monthly", "all-time"] as TimeFilter[]).map((f) => (
               <button
                 key={f}
@@ -153,7 +155,7 @@ export default function Leaderboard() {
           </div>
 
           {/* Search & Filter */}
-          <div className="flex items-center gap-3 w-full lg:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             <Input
               type="search"
               placeholder="Search citizens..."
@@ -175,19 +177,19 @@ export default function Leaderboard() {
                 </svg>
               }
               iconPosition="left"
-              className="lg:w-64"
+              className="flex-1 sm:flex-none lg:w-64"
             />
             <Pill
               variant="outline"
               size="md"
-              className="cursor-pointer hover:bg-gray-50"
+              className="cursor-pointer hover:bg-gray-50 hidden sm:inline-flex"
             >
               By Constituency ▾
             </Pill>
             <Pill
               variant="outline"
               size="md"
-              className="cursor-pointer hover:bg-gray-50"
+              className="cursor-pointer hover:bg-gray-50 hidden sm:inline-flex"
             >
               By Category ▾
             </Pill>
@@ -237,8 +239,8 @@ export default function Leaderboard() {
       {/* Footer */}
       <footer className="mt-16 py-8 border-t border-[#ECE7E4]">
         <div className="max-w-[1280px] mx-auto px-6 text-center text-sm text-[#94A3B8]">
-          © 2026 Janamat Rewards. Building civic engagement through meaningful
-          participation.
+          © 2026 Janamat Rewards Engine. Building civic engagement through
+          meaningful participation.
         </div>
       </footer>
     </div>

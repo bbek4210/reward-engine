@@ -13,8 +13,8 @@ export default function ConstituencySpotlight({
   onViewMissions,
 }: ConstituencySpotlightProps) {
   return (
-    <div className="bg-gradient-to-br from-[#E11D48] to-[#BE123C] text-white rounded-2xl p-8 shadow-[0_20px_40px_rgba(225,29,72,0.2)]">
-      <div className="flex items-start justify-between gap-8">
+    <div className="bg-gradient-to-br from-[#E11D48] to-[#BE123C] text-white rounded-2xl p-5 sm:p-8 shadow-[0_20px_40px_rgba(225,29,72,0.2)]">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-8">
         <div className="flex-1 space-y-4">
           {/* Label */}
           <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
@@ -22,7 +22,7 @@ export default function ConstituencySpotlight({
           </div>
 
           {/* Constituency Name */}
-          <h2 className="text-5xl font-bold leading-tight">
+          <h2 className="text-3xl sm:text-5xl font-bold leading-tight">
             {data.constituency}
           </h2>
 

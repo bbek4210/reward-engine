@@ -165,13 +165,15 @@ export default function ReferralPage() {
         onDisconnectWallet={handleDisconnectWallet}
       />
 
-      <main className="max-w-[1200px] mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Hero */}
-        <div className="bg-gradient-to-br from-[#E11D48] to-[#7C3AED] rounded-2xl p-8 text-white overflow-hidden relative">
+        <div className="bg-gradient-to-br from-[#E11D48] to-[#7C3AED] rounded-2xl p-6 sm:p-8 text-white overflow-hidden relative">
           <div className="absolute -right-16 -top-16 w-64 h-64 bg-white opacity-5 rounded-full" />
           <div className="absolute -right-4 -bottom-8 w-48 h-48 bg-white opacity-5 rounded-full" />
           <div className="relative z-10">
-            <h1 className="text-3xl font-bold mb-2">Refer & Earn</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+              Refer & Earn
+            </h1>
             <p className="text-white/80 text-lg mb-6">
               Invite friends to Janamat Rewards Engine. You earn{" "}
               <span className="font-bold text-white">5 pts</span> per successful

@@ -98,9 +98,11 @@ export default function PollsPage() {
         onDisconnectWallet={handleDisconnectWallet}
       />
 
-      <main className="max-w-[1400px] mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#0F172A]">Community Polls</h1>
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0F172A]">
+            Community Polls
+          </h1>
           <p className="text-[#64748B] mt-1">
             Vote on issues that matter. Earn JMT points for every participation.
           </p>
@@ -136,17 +138,17 @@ export default function PollsPage() {
         {/* Filters */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 mb-6 space-y-4">
           <div className="flex gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="relative flex-1 min-w-[160px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search polls, constituencies..."
+                placeholder="Search polls..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {SORTS.map((s) => {
                 const Icon = s.icon;
                 return (
