@@ -36,8 +36,6 @@ import {
   incrementMissionProgress,
   savePollVote,
   getPollVote,
-  savePollLocalVotes,
-  getPollLocalVotes,
   savePollComments,
   getPollComments,
   savePollLiked,
@@ -73,9 +71,8 @@ export default function PollDetailPage() {
   const [likedComments, setLikedComments] = useState<Set<string>>(() =>
     getPollLiked(id),
   );
-  const [localVotes, setLocalVotes] = useState<Record<string, number>>(() =>
-    getPollLocalVotes(id),
-  );
+  // Tracks only post-load optimistic vote changes (+1 after the user votes)
+  const [localVotes, setLocalVotes] = useState<Record<string, number>>({});
   const [copied, setCopied] = useState(false);
   const commentIdRef = useRef(0);
 
@@ -111,16 +108,8 @@ export default function PollDetailPage() {
             savePollVote(id, data.userVote);
           }
 
-          if (data.voteMap && pollRes.data) {
-            const p = pollRes.data as Poll;
-            const delta: Record<string, number> = {};
-            for (const opt of p.options) {
-              const dbCount = data.voteMap[opt.id] || 0;
-              if (dbCount > 0) delta[opt.id] = dbCount;
-            }
-            setLocalVotes(delta);
-            savePollLocalVotes(id, delta);
-          }
+          // voteMap is already baked into totalVotes/options from the getById endpoint;
+          // nothing extra to add here.
 
           if (data.comments?.length) {
             setComments(data.comments);
@@ -209,12 +198,12 @@ export default function PollDetailPage() {
       };
       if (res.success && res.data) {
         setVoted(optionId);
-        const delta: Record<string, number> = {};
-        for (const opt of poll.options)
-          delta[opt.id] = res.data.voteMap[opt.id] || 0;
-        setLocalVotes(delta);
+        // Add exactly +1 to the option the user just voted for
+        setLocalVotes((prev) => ({
+          ...prev,
+          [optionId]: (prev[optionId] || 0) + 1,
+        }));
         savePollVote(id, optionId);
-        savePollLocalVotes(id, delta);
         addPoints(poll.pointsForVoting);
         // Track progress for "Weekly Voter Participation" (id:1) and "Daily Opinion Pulse" (id:3)
         incrementMissionProgress("1", wallet.address);
@@ -410,6 +399,32 @@ export default function PollDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* Inactive Banner */}
+            {poll.status === "inactive" && (
+              <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3">
+                <svg
+                  className="w-5 h-5 text-amber-500 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-amber-800">
+                    This poll is inactive
+                  </p>
+                  <p className="text-xs text-amber-600 mt-0.5">
+                    Voting has been disabled. You can view the results and
+                    discussion, but votes cannot be cast.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Chart Card */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
@@ -702,7 +717,29 @@ export default function PollDetailPage() {
 
             {/* Vote / Sign In */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              {wallet.connected ? (
+              {poll.status === "inactive" ? (
+                <div className="text-center py-2">
+                  <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                    </svg>
+                  </div>
+                  <p className="font-semibold text-gray-700">
+                    Voting Not Available
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    This poll is currently inactive. Results are shown for
+                    reference only.
+                  </p>
+                </div>
+              ) : wallet.connected ? (
                 <>
                   {voted ? (
                     <div className="text-center py-2">
@@ -830,7 +867,9 @@ export default function PollDetailPage() {
                     <span
                       className={`font-medium ${
                         k === "Status"
-                          ? "text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs"
+                          ? poll.status === "inactive"
+                            ? "text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full text-xs"
+                            : "text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs"
                           : "text-gray-800"
                       }`}
                     >

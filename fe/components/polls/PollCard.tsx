@@ -75,10 +75,17 @@ export default function PollCard({ poll }: PollCardProps) {
         <div className="p-4 space-y-3">
           {/* Tags */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-              {poll.status.charAt(0).toUpperCase() + poll.status.slice(1)}
-            </span>
+            {poll.status === "inactive" ? (
+              <span className="flex items-center gap-1 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-300 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                Inactive
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                {poll.status.charAt(0).toUpperCase() + poll.status.slice(1)}
+              </span>
+            )}
             <span className="flex items-center gap-1 text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
               <MapPin className="w-3 h-3" />
               {poll.country}

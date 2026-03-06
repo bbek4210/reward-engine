@@ -102,7 +102,7 @@ export type TabType = 'trending' | 'new' | 'constituencies' | 'categories' | 'al
 
 // Poll types
 export type PollCategory = 'political' | 'education' | 'health' | 'environment' | 'governance' | 'social' | 'infrastructure' | 'other';
-export type PollStatus = 'active' | 'closed' | 'upcoming';
+export type PollStatus = 'active' | 'closed' | 'upcoming' | 'inactive';
 export type PollType = 'candidate' | 'referendum' | 'survey' | 'opinion';
 
 export interface PollOption {
