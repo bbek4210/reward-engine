@@ -133,6 +133,7 @@ export interface PollTrendPoint {
 export interface Poll {
     id: string;
     pid: number;
+    image?: string;
     title: string;
     question: string;
     description?: string;
@@ -179,6 +180,17 @@ export interface WalletState {
 }
 
 // API Response types
+// Timeline Entry types
+export interface TimelineEntry {
+    id: string;
+    text: string;
+    createdAt: number;
+    revealAt: number;
+    revealed: boolean;
+    pollId?: string;
+    pollQuestion?: string;
+}
+
 export interface ApiResponse<T> {
     success: boolean;
     data?: T;

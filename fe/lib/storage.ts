@@ -88,6 +88,7 @@ export const STORAGE_KEYS = {
   POLL_COMMENTS: "poll_comments", // { [pollId]: PollComment[] }
   POLL_LIKED: "poll_liked", // { [pollId]: string[] }
   REDEMPTION_HISTORY: "redemption_history", // RedemptionHistory[]
+  TIME_CAPSULES: "time_capsules", // TimeCapsule[]
 } as const;
 
 /** Increment the stored action count for a mission and return the new count.
@@ -201,3 +202,66 @@ export function getPollLiked(pollId: string): Set<string> {
   );
   return new Set(all[pollId] ?? []);
 }
+
+// ── Janamat Timeline persistence helpers ──────────────────────────────────────
+
+import { TimelineEntry } from "@/types";
+
+const TIMELINE_KEY = "janamat_timeline";
+
+/** Get all saved timeline entries. */
+export const getTimelineEntries = (): TimelineEntry[] => {
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(TIMELINE_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
+
+/** Save a new timeline entry. */
+export const saveTimelineEntry = (entry: TimelineEntry) => {
+  const entries = getTimelineEntries();
+  entries.unshift(entry); // Add to beginning
+  localStorage.setItem(TIMELINE_KEY, JSON.stringify(entries));
+};
+
+/** Update an existing timeline entry. */
+export const updateTimelineEntry = (id: string, updates: Partial<TimelineEntry>) => {
+  const entries = getTimelineEntries();
+  const index = entries.findIndex((e) => e.id === id);
+  if (index !== -1) {
+    entries[index] = { ...entries[index], ...updates };
+    localStorage.setItem(TIMELINE_KEY, JSON.stringify(entries));
+  }
+};
+
+/** Seed mock data for Janamat Timeline. */
+export const seedMockTimeline = (force = false) => {
+  const entries = getTimelineEntries();
+  if (entries.length > 0 && !force) return;
+
+  const now = Date.now();
+  const mockEntries: TimelineEntry[] = [
+    {
+      id: "mock-1",
+      text: "I think public transport should be free in Kathmandu to reduce pollution.",
+      createdAt: now - 5 * 24 * 60 * 60 * 1000,
+      revealAt: now - 1 * 60 * 1000, // Revealed 1 min ago
+      revealed: true,
+      pollQuestion: "Should Kathmandu implement free public transport?",
+    },
+    {
+      id: "mock-2",
+      text: "Electric vehicles are the only way forward for our city's air quality.",
+      createdAt: now - 2 * 24 * 60 * 60 * 1000,
+      revealAt: now + 3 * 24 * 60 * 60 * 1000, // Revealed in 3 days
+      revealed: false,
+      pollQuestion: "Are electric vehicles the solution for pollution?",
+    },
+  ];
+
+  localStorage.setItem(TIMELINE_KEY, JSON.stringify(mockEntries));
+};
+
+/** Clear all timeline entries. */
+export const clearTimeline = () => {
+  localStorage.removeItem(TIMELINE_KEY);
+};

@@ -32,12 +32,12 @@ export default function PollCard({ poll }: PollCardProps) {
         <div
           className={`relative h-44 bg-gradient-to-br ${bannerGradient} flex items-end overflow-hidden`}
         >
-          {/* Full-cover candidate photo */}
-          {topTwo[0]?.image ? (
+          {/* Full-cover poll photo */}
+          {(poll.image || topTwo[0]?.image) ? (
             <img
-              src={topTwo[0].image}
-              alt={topTwo[0].label}
-              className="absolute inset-0 w-full h-full object-cover object-top"
+              src={poll.image || topTwo[0]?.image}
+              alt={poll.question}
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
             /* Mountain/building sketch overlay — only when no photo */
@@ -63,6 +63,9 @@ export default function PollCard({ poll }: PollCardProps) {
               </svg>
             </div>
           )}
+          
+          {/* Subtle gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-60" />
           {/* Constituency Badge */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
             <span className="bg-[#E11D48] text-white font-bold text-sm px-3 py-1.5 rounded">

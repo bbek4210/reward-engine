@@ -12,7 +12,6 @@ import type { Poll, PollCategory } from "@/types";
 
 const CATEGORIES: { id: PollCategory | "all"; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "political", label: "Political" },
   { id: "education", label: "Education" },
   { id: "health", label: "Health" },
   { id: "environment", label: "Environment" },

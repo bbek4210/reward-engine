@@ -132,6 +132,7 @@ export default function Header({
   const navLinks = [
     { href: "/dashboard", label: "Missions" },
     { href: "/polls", label: "Polls" },
+    { href: "/timeline", label: "Janamat Timeline" },
     { href: "/leaderboard", label: "Leaderboard" },
     { href: "/redeem", label: "Redeem" },
     { href: "/referral", label: "Refer & Earn" },

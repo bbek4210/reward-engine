@@ -8,6 +8,7 @@ import { ToastProvider } from "@/contexts/ToastContext";
 import { SolanaWalletProvider } from "@/contexts/WalletAdapterProvider";
 import PointsToast from "@/components/ui/PointsToast";
 import ToastContainer from "@/components/ui/ToastContainer";
+import JanamatTimelineManager from "@/components/capsule/JanamatTimelineManager";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({
           <ToastProvider>
             <UserProvider>
               {children}
+              <JanamatTimelineManager />
               <PointsToast />
               <ToastContainer />
             </UserProvider>

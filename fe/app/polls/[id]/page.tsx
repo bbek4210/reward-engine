@@ -25,7 +25,9 @@ import {
   Heart,
   Send,
   CheckCircle,
+  Lock as LockIcon,
 } from "lucide-react";
+import Button from "@/components/ui/Button";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useUser } from "@/contexts/UserContext";
@@ -42,6 +44,7 @@ import {
   getPollLiked,
 } from "@/lib/storage";
 import type { PollComment } from "@/types";
+import JanamatTimelineModal from "@/components/capsule/JanamatTimelineModal";
 
 type TimeFilter = "1H" | "24H" | "7D" | "All";
 
@@ -74,6 +77,7 @@ export default function PollDetailPage() {
   // Tracks only post-load optimistic vote changes (+1 after the user votes)
   const [localVotes, setLocalVotes] = useState<Record<string, number>>({});
   const [copied, setCopied] = useState(false);
+  const [isCapsuleModalOpen, setIsCapsuleModalOpen] = useState(false);
   const commentIdRef = useRef(0);
 
   // Fetch poll data + backend vote state in parallel
@@ -327,6 +331,13 @@ export default function PollDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F4F2]">
+      <JanamatTimelineModal
+        isOpen={isCapsuleModalOpen}
+        onClose={() => setIsCapsuleModalOpen(false)}
+        pollId={poll.id}
+        pollQuestion={poll.question}
+        revealAtDate={poll.endsAt}
+      />
       <Header
         variant="dashboard"
         onConnectWallet={handleConnectWallet}
@@ -352,20 +363,29 @@ export default function PollDetailPage() {
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="flex gap-3 sm:gap-4 p-4 sm:p-6">
                 {/* Thumbnail */}
-                <div className="w-20 h-16 sm:w-40 sm:h-28 bg-gradient-to-br from-gray-700 to-gray-500 rounded-xl flex-shrink-0 relative overflow-hidden">
-                  <svg
-                    viewBox="0 0 160 112"
-                    className="absolute inset-0 w-full h-full opacity-20"
-                  >
-                    <path
-                      d="M0 112 L40 30 L70 60 L100 10 L130 45 L160 25 L160 112Z"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="1.5"
+                <div className="w-24 h-24 sm:w-40 sm:h-28 bg-gradient-to-br from-gray-700 to-gray-500 rounded-2xl flex-shrink-0 relative overflow-hidden shadow-lg border-2 border-white">
+                  {poll.image ? (
+                    <img 
+                      src={poll.image} 
+                      alt={poll.question}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-white font-bold text-xs bg-rose-600 px-2 py-1 rounded">
+                  ) : (
+                    <svg
+                      viewBox="0 0 160 112"
+                      className="absolute inset-0 w-full h-full opacity-20"
+                    >
+                      <path
+                        d="M0 112 L40 30 L70 60 L100 10 L130 45 L160 25 L160 112Z"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                  )}
+                  <div className="absolute inset-0 bg-black/10 transition-colors hover:bg-black/0" />
+                  <div className="absolute top-2 left-2">
+                    <span className="text-white font-bold text-[10px] bg-rose-600 px-2 py-0.5 rounded-full shadow-sm">
                       {poll.bannerLabel}
                     </span>
                   </div>
@@ -753,6 +773,16 @@ export default function PollDetailPage() {
                           +{poll.pointsForVoting} pts
                         </span>
                       </p>
+                      <div className="mt-4">
+                        <Button
+                          variant="outline"
+                          className="w-full text-rose-600 border-rose-600 hover:bg-rose-50"
+                          onClick={() => setIsCapsuleModalOpen(true)}
+                        >
+                          <LockIcon className="w-4 h-4 mr-2" />
+                          Save to Janamat Timeline
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <>
@@ -789,6 +819,16 @@ export default function PollDetailPage() {
                             )}
                           </button>
                         ))}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <Button
+                          variant="ghost"
+                          className="w-full text-rose-600 border-rose-200 hover:bg-rose-50"
+                          onClick={() => setIsCapsuleModalOpen(true)}
+                        >
+                          <LockIcon className="w-4 h-4 mr-2" />
+                          Save to Janamat Timeline
+                        </Button>
                       </div>
                     </>
                   )}
