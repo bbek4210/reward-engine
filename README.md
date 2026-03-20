@@ -1,38 +1,67 @@
-#  Janamat Rewards Engine
+Janamat Reward Engine
 
-> Earn points for meaningful civic participation on the blockchain.
+Janamat Reward Engine is a civic participation infrastructure layer that transforms meaningful public engagement into measurable and incentivized value.
 
-Janamat Rewards is a **Web3 civic engagement platform** built for Nepal. Citizens connect their Solana wallet, participate in polls, complete missions, and earn redeemable SOL rewards — all transparently on-chain.
+Built as part of the broader Janamat ecosystem, the reward engine introduces transparent attribution, gamified engagement, and programmable reward logic for civic actions.
 
----
+The system is designed to support structured public discourse by encouraging participation through accountable and scalable incentive mechanisms.
 
-## ✨ Features
+✨ Core Features
 
-- � **Solana Wallet Login** — Connect via Phantom, no account needed
-- � **Live Polls** — Vote on constituency-level political decisions
-- � **Missions** — Complete daily/weekly civic tasks to earn points
-- � **Leaderboard** — Compete with citizens across constituencies
-- � **Redeem** — Convert earned points to real SOL
-- � **Refer & Earn** — Invite others and earn bonus points
+Gamified civic engagement architecture
 
----Try the app: https://janamatreward.tech/
+Activity-based reward attribution
 
-  demo video link :https://youtu.be/un3k0h547Ao
+Constituency and category-based leaderboards
 
-## Tech Stack
+On-chain reward conversion logic (MVP stage)
 
-| Layer      | Technology                           |
-| ---------- | ------------------------------------ |
-| Frontend   | Next.js 14, TypeScript, Tailwind CSS |
-| Blockchain | Solana (Devnet), Phantom Wallet      |
-| Backend    | Node.js, Express                     |
-| State      | React Context API                    |
+Transparent participation tracking
 
----
+Streak and referral participation loops
 
-##  Getting Started
+These capabilities establish a continuous civic engagement cycle:
 
-### Prerequisites
+Engage → Contribute → Earn → Repeat
 
-- Node.js v18+
-- Phantom Wallet browser extension
+🕰️ New Feature: Janamat Timeline
+
+Janamat Timeline introduces a new layer that preserves civic opinions across time, allowing participants to observe how public sentiment evolves.
+
+While the reward engine ensures participation is measurable and incentivized, this feature adds historical continuity to civic discourse.
+
+It enables:
+
+Recording opinions for future reveal
+
+Tracking shifts in collective sentiment
+
+Creating structured civic memory
+
+Enhancing long-term analytical value of participation
+
+This moves the ecosystem toward:
+
+Engage → Contribute → Earn → Remember → Understand
+
+🌐 Ecosystem Context
+
+The Janamat Reward Engine operates alongside Janamat.app, the parent civic platform focused on enabling structured public discourse.
+
+Together, these layers contribute to building infrastructure for accountable, data-driven digital participation.
+
+🚀 Future Direction
+
+On-chain opinion timestamping
+
+Civic sentiment analytics
+
+Governance insight dashboards
+
+AI-driven public opinion evolution
+
+Integration into core Janamat platform
+
+🧠 Vision
+
+To build programmable, transparent, and historically meaningful civic participation infrastructure.
