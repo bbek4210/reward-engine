@@ -126,9 +126,9 @@ export default function CitizenLeaderboardList({
                         {entry.name}
                       </h4>
                     )}
-                    <p className="text-xs text-[#94A3B8]">
+                    {/* <p className="text-xs text-[#94A3B8]">
                       {entry.handle ? `@${entry.handle}` : entry.constituency}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
 
